@@ -58,9 +58,15 @@
     h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
     .status-text { font-size: 0.8rem; color: var(--text-muted); }
 
+    .search-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
     .search-box {
       position: relative;
-      width: 100%;
+      flex: 1;
     }
 
     .search-input {
@@ -75,6 +81,23 @@
       transition: border-color 0.2s;
     }
     .search-input:focus { border-color: var(--accent); }
+
+    .catalog-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .catalog-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent);
+    }
 
     .autocomplete-list {
       position: absolute;
@@ -104,6 +127,7 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
     .autocomplete-type { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
+    /* Панель недель */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -137,6 +161,7 @@
       text-align: center;
     }
 
+    /* Карточка дня */
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -253,9 +278,79 @@
       padding: 10px 0;
     }
 
+    /* Модальное окно каталога */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: #151d30;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h2 { font-size: 1.2rem; color: #fff; }
+    .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+
+    .modal-body {
+      padding: 16px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .catalog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .catalog-item {
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      transition: all 0.2s;
+    }
+    .catalog-item:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .catalog-breadcrumbs {
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
     @media (max-width: 650px) {
       .lesson-item { grid-template-columns: 1fr; gap: 8px; }
       .teacher-block { text-align: left; }
+      .search-row { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
@@ -267,15 +362,18 @@
         <div id="statusText" class="status-text">Загрузка...</div>
       </div>
 
-      <div class="search-box">
-        <input 
-          type="text" 
-          id="searchInput" 
-          class="search-input" 
-          placeholder="Поиск по всему СКФУ: группа (напр. ИНС, ПИ), фамилия или аудитория..." 
-          autocomplete="off"
-        />
-        <div id="autocompleteList" class="autocomplete-list"></div>
+      <div class="search-row">
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="Поиск: группа, фамилия преподавателя или аудитория..." 
+            autocomplete="off"
+          />
+          <div id="autocompleteList" class="autocomplete-list"></div>
+        </div>
+        <button class="catalog-btn" onclick="openCatalog()">🏛️ Каталог групп</button>
       </div>
     </header>
 
@@ -286,6 +384,20 @@
     </div>
 
     <div id="scheduleContainer"></div>
+  </div>
+
+  <!-- Модалка каталога институтов СКФУ -->
+  <div id="catalogModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Выбор института</h2>
+        <button class="close-modal" onclick="closeCatalog()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="breadcrumbs" class="catalog-breadcrumbs" style="display: none;" onclick="goBackCatalog()">← Назад</div>
+        <div id="catalogContainer" class="catalog-list"></div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -302,6 +414,23 @@
       7: { start: "18:30", end: "20:00" },
       8: { start: "20:10", end: "21:40" }
     };
+
+    // Базовый список институтов СКФУ
+    const INSTITUTES = [
+      { id: 4320, name: "Факультет математики и компьютерных наук" },
+      { id: 4316, name: "Институт цифрового развития / Перспективной инженерии" },
+      { id: 4317, name: "Гуманитарный институт" },
+      { id: 4318, name: "Медико-биологический факультет" },
+      { id: 4319, name: "Психолого-педагогический факультет" },
+      { id: 4321, name: "Факультет международных отношений" },
+      { id: 4322, name: "Факультет нефтегазовой инженерии" },
+      { id: 4323, name: "Факультет пищевой инженерии и биотехнологий" },
+      { id: 4324, name: "Факультет физической культуры и спорта" },
+      { id: 4325, name: "Физико-технический факультет" },
+      { id: 4326, name: "Юридический институт" },
+      { id: 4327, name: "Институт экономики и управления" },
+      { id: 4328, name: "Колледж СКФУ" }
+    ];
 
     let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || {
       id: 19931,
@@ -500,7 +629,7 @@
       loadSchedule();
     }
 
-    // Живой поиск с парсингом HTML
+    // Живой поиск
     let searchTimeout = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
@@ -530,7 +659,6 @@
               const name = a.textContent.trim();
               const parts = href.split('/').filter(Boolean);
               
-              // Разбор типа и ID из ссылки
               const typeStr = parts[1] || '';
               const id = parseInt(parts[2], 10);
               
@@ -574,19 +702,120 @@
           <span class="autocomplete-type">${item.typeName}</span>
         `;
         div.onclick = () => {
-          currentTarget = {
-            id: item.id,
-            name: item.name,
-            type: item.targetType
-          };
-          localStorage.setItem('savedTarget', JSON.stringify(currentTarget));
+          selectTarget(item.id, item.name, item.targetType);
           autoList.style.display = 'none';
           searchInput.value = '';
-          loadSchedule();
         };
         autoList.appendChild(div);
       });
       autoList.style.display = 'block';
+    }
+
+    function selectTarget(id, name, type) {
+      currentTarget = { id, name, type };
+      localStorage.setItem('savedTarget', JSON.stringify(currentTarget));
+      closeCatalog();
+      loadSchedule();
+    }
+
+    // ЛОГИКА КАТАЛОГА (Институт -> Специальность -> Группа)
+    let catalogStep = 1;
+    let selectedInstitute = null;
+
+    function openCatalog() {
+      document.getElementById('catalogModal').style.display = 'flex';
+      renderInstitutes();
+    }
+
+    function closeCatalog() {
+      document.getElementById('catalogModal').style.display = 'none';
+    }
+
+    function renderInstitutes() {
+      catalogStep = 1;
+      document.getElementById('modalTitle').innerText = 'Выбор института / факультета';
+      document.getElementById('breadcrumbs').style.display = 'none';
+      const container = document.getElementById('catalogContainer');
+      container.innerHTML = '';
+
+      INSTITUTES.forEach(inst => {
+        const div = document.createElement('div');
+        div.className = 'catalog-item';
+        div.textContent = inst.name;
+        div.onclick = () => loadSpecialities(inst);
+        container.appendChild(div);
+      });
+    }
+
+    async function loadSpecialities(inst) {
+      catalogStep = 2;
+      selectedInstitute = inst;
+      document.getElementById('modalTitle').innerText = inst.name;
+      document.getElementById('breadcrumbs').style.display = 'block';
+      const container = document.getElementById('catalogContainer');
+      container.innerHTML = '<div class="empty-day">Загрузка специальностей...</div>';
+
+      try {
+        const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSpecialities`), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instituteId: inst.id, branchId: 1 })
+        });
+        const specs = await res.json();
+        
+        container.innerHTML = '';
+        specs.forEach(spec => {
+          const div = document.createElement('div');
+          div.className = 'catalog-item';
+          div.textContent = spec.Name;
+          div.onclick = () => loadGroups(inst.id, spec.Name);
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444;">Не удалось загрузить специальности</div>';
+      }
+    }
+
+    async function loadGroups(instId, specName) {
+      catalogStep = 3;
+      document.getElementById('modalTitle').innerText = specName;
+      const container = document.getElementById('catalogContainer');
+      container.innerHTML = '<div class="empty-day">Загрузка групп...</div>';
+
+      try {
+        const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetAcademicGroups`), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instituteId: instId, specialty: specName, branchId: 1 })
+        });
+        const groupsData = await res.json();
+        
+        container.innerHTML = '';
+        groupsData.forEach(block => {
+          const title = document.createElement('div');
+          title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 10px 0 4px 0; font-size: 0.9rem;';
+          title.textContent = block.Key || 'Группы';
+          container.appendChild(title);
+
+          (block.Value || []).forEach(grp => {
+            const div = document.createElement('div');
+            div.className = 'catalog-item';
+            div.textContent = grp.Name;
+            div.onclick = () => selectTarget(grp.Id, grp.Name, 2);
+            container.appendChild(div);
+          });
+        });
+      } catch (err) {
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444;">Не удалось загрузить группы</div>';
+      }
+    }
+
+    function goBackCatalog() {
+      if (catalogStep === 3) {
+        loadSpecialities(selectedInstitute);
+      } else if (catalogStep === 2) {
+        renderInstitutes();
+      }
     }
 
     document.addEventListener('click', (e) => {
