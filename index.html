@@ -127,7 +127,6 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
     .autocomplete-type { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Панель недель */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -161,7 +160,6 @@
       text-align: center;
     }
 
-    /* Карточка дня */
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -278,7 +276,7 @@
       padding: 10px 0;
     }
 
-    /* Модальное окно каталога */
+    /* Модальное окно */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -296,7 +294,7 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       max-height: 85vh;
       display: flex;
       flex-direction: column;
@@ -310,7 +308,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    .modal-header h2 { font-size: 1.2rem; color: #fff; }
+    .modal-header h2 { font-size: 1.15rem; color: #fff; }
     .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
 
     .modal-body {
@@ -345,6 +343,7 @@
       color: var(--accent);
       margin-bottom: 12px;
       cursor: pointer;
+      display: inline-block;
     }
 
     @media (max-width: 650px) {
@@ -368,12 +367,12 @@
             type="text" 
             id="searchInput" 
             class="search-input" 
-            placeholder="Поиск: группа, фамилия преподавателя или аудитория..." 
+            placeholder="Поиск: группа, преподаватель или аудитория..." 
             autocomplete="off"
           />
           <div id="autocompleteList" class="autocomplete-list"></div>
         </div>
-        <button class="catalog-btn" onclick="openCatalog()">🏛️ Каталог групп</button>
+        <button class="catalog-btn" onclick="openCatalog()">🏛️ Все факультеты</button>
       </div>
     </header>
 
@@ -386,15 +385,14 @@
     <div id="scheduleContainer"></div>
   </div>
 
-  <!-- Модалка каталога институтов СКФУ -->
   <div id="catalogModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 id="modalTitle">Выбор института</h2>
+        <h2 id="modalTitle">Выбор факультета / института</h2>
         <button class="close-modal" onclick="closeCatalog()">&times;</button>
       </div>
       <div class="modal-body">
-        <div id="breadcrumbs" class="catalog-breadcrumbs" style="display: none;" onclick="goBackCatalog()">← Назад</div>
+        <div id="breadcrumbs" class="catalog-breadcrumbs" style="display: none;" onclick="goBackCatalog()">← Назад к списку</div>
         <div id="catalogContainer" class="catalog-list"></div>
       </div>
     </div>
@@ -414,23 +412,6 @@
       7: { start: "18:30", end: "20:00" },
       8: { start: "20:10", end: "21:40" }
     };
-
-    // Базовый список институтов СКФУ
-    const INSTITUTES = [
-      { id: 4320, name: "Факультет математики и компьютерных наук" },
-      { id: 4316, name: "Институт цифрового развития / Перспективной инженерии" },
-      { id: 4317, name: "Гуманитарный институт" },
-      { id: 4318, name: "Медико-биологический факультет" },
-      { id: 4319, name: "Психолого-педагогический факультет" },
-      { id: 4321, name: "Факультет международных отношений" },
-      { id: 4322, name: "Факультет нефтегазовой инженерии" },
-      { id: 4323, name: "Факультет пищевой инженерии и биотехнологий" },
-      { id: 4324, name: "Факультет физической культуры и спорта" },
-      { id: 4325, name: "Физико-технический факультет" },
-      { id: 4326, name: "Юридический институт" },
-      { id: 4327, name: "Институт экономики и управления" },
-      { id: 4328, name: "Колледж СКФУ" }
-    ];
 
     let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || {
       id: 19931,
@@ -599,6 +580,12 @@
               subgroup = l.Groups[0].Subgroup.trim();
             }
 
+            // Для преподавателей показываем название группы
+            let extraGroupInfo = '';
+            if (currentTarget.type === 1 && l.Groups && l.Groups.length > 0) {
+              extraGroupInfo = l.Groups.map(g => g.Name).join(', ');
+            }
+
             item.innerHTML = `
               <div class="pair-time-block">
                 <span class="pair-num">${pairNum} пара</span>
@@ -610,6 +597,7 @@
                   ${rawType ? `<span class="badge ${badgeClass}">${rawType}</span>` : ''}
                   ${subgroup ? `<span class="subgroup-tag">Подгруппа ${subgroup}</span>` : ''}
                   ${roomFormatted ? `<span class="room-tag">📍 ${roomFormatted}</span>` : ''}
+                  ${extraGroupInfo ? `<span class="subgroup-tag">👥 ${extraGroupInfo}</span>` : ''}
                 </div>
               </div>
               <div class="teacher-block">
@@ -718,30 +706,71 @@
       loadSchedule();
     }
 
-    // ЛОГИКА КАТАЛОГА (Институт -> Специальность -> Группа)
+    // ДИНАМИЧЕСКИЙ КАТАЛОГ С САЙТА СКФУ
+    let cachedInstitutes = null;
     let catalogStep = 1;
     let selectedInstitute = null;
 
     function openCatalog() {
       document.getElementById('catalogModal').style.display = 'flex';
-      renderInstitutes();
+      loadDynamicInstitutes();
     }
 
     function closeCatalog() {
       document.getElementById('catalogModal').style.display = 'none';
     }
 
-    function renderInstitutes() {
+    async function loadDynamicInstitutes() {
       catalogStep = 1;
-      document.getElementById('modalTitle').innerText = 'Выбор института / факультета';
+      document.getElementById('modalTitle').innerText = 'Выбор факультета / института';
       document.getElementById('breadcrumbs').style.display = 'none';
       const container = document.getElementById('catalogContainer');
-      container.innerHTML = '';
+      
+      if (cachedInstitutes) {
+        renderInstitutesList(cachedInstitutes);
+        return;
+      }
 
-      INSTITUTES.forEach(inst => {
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка институтов с сервера СКФУ...</div>';
+
+      try {
+        const res = await fetch(PROXY_URL + encodeURIComponent('https://ecampus.ncfu.ru/schedule'));
+        const htmlText = await res.text();
+        
+        // Извлекаем массив JSON институтов из скриптов страницы
+        const match = htmlText.match(/var\s+institutes\s*=\s*(\[\{.*?\}\]);/s) || htmlText.match(/institutes:\s*(\[\{.*?\}\])/s);
+        
+        if (match && match[1]) {
+          cachedInstitutes = JSON.parse(match[1]);
+        } else {
+          // Если встроенного массива нет в явном виде, парсим спаны со страницы
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlText, 'text/html');
+          const panelSpans = doc.querySelectorAll('.panel-heading span[data-bind*="Name"]');
+          
+          cachedInstitutes = [];
+          panelSpans.forEach((span, idx) => {
+            cachedInstitutes.push({
+              Id: idx + 1,
+              Name: span.textContent.trim(),
+              BranchId: 1
+            });
+          });
+        }
+
+        renderInstitutesList(cachedInstitutes);
+      } catch (err) {
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить список институтов.</div>';
+      }
+    }
+
+    function renderInstitutesList(list) {
+      const container = document.getElementById('catalogContainer');
+      container.innerHTML = '';
+      list.forEach(inst => {
         const div = document.createElement('div');
         div.className = 'catalog-item';
-        div.textContent = inst.name;
+        div.textContent = inst.Name || inst.name;
         div.onclick = () => loadSpecialities(inst);
         container.appendChild(div);
       });
@@ -750,25 +779,34 @@
     async function loadSpecialities(inst) {
       catalogStep = 2;
       selectedInstitute = inst;
-      document.getElementById('modalTitle').innerText = inst.name;
-      document.getElementById('breadcrumbs').style.display = 'block';
+      const instName = inst.Name || inst.name;
+      document.getElementById('modalTitle').innerText = instName;
+      document.getElementById('breadcrumbs').style.display = 'inline-block';
       const container = document.getElementById('catalogContainer');
-      container.innerHTML = '<div class="empty-day">Загрузка специальностей...</div>';
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка направлений...</div>';
+
+      const instId = inst.Id || inst.id;
+      const branchId = inst.BranchId || inst.branchId || 1;
 
       try {
         const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSpecialities`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ instituteId: inst.id, branchId: 1 })
+          body: JSON.stringify({ instituteId: instId, branchId: branchId })
         });
         const specs = await res.json();
         
         container.innerHTML = '';
+        if (!specs || !specs.length) {
+          container.innerHTML = '<div class="empty-day">Направления не найдены</div>';
+          return;
+        }
+
         specs.forEach(spec => {
           const div = document.createElement('div');
           div.className = 'catalog-item';
           div.textContent = spec.Name;
-          div.onclick = () => loadGroups(inst.id, spec.Name);
+          div.onclick = () => loadGroups(instId, branchId, spec.Name);
           container.appendChild(div);
         });
       } catch (err) {
@@ -776,21 +814,26 @@
       }
     }
 
-    async function loadGroups(instId, specName) {
+    async function loadGroups(instId, branchId, specName) {
       catalogStep = 3;
       document.getElementById('modalTitle').innerText = specName;
       const container = document.getElementById('catalogContainer');
-      container.innerHTML = '<div class="empty-day">Загрузка групп...</div>';
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка групп...</div>';
 
       try {
         const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetAcademicGroups`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ instituteId: instId, specialty: specName, branchId: 1 })
+          body: JSON.stringify({ instituteId: instId, specialty: specName, branchId: branchId })
         });
         const groupsData = await res.json();
         
         container.innerHTML = '';
+        if (!groupsData || !groupsData.length) {
+          container.innerHTML = '<div class="empty-day">Группы не найдены</div>';
+          return;
+        }
+
         groupsData.forEach(block => {
           const title = document.createElement('div');
           title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 10px 0 4px 0; font-size: 0.9rem;';
@@ -814,7 +857,10 @@
       if (catalogStep === 3) {
         loadSpecialities(selectedInstitute);
       } else if (catalogStep === 2) {
-        renderInstitutes();
+        catalogStep = 1;
+        document.getElementById('modalTitle').innerText = 'Выбор факультета / института';
+        document.getElementById('breadcrumbs').style.display = 'none';
+        renderInstitutesList(cachedInstitutes);
       }
     }
 
