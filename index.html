@@ -398,7 +398,6 @@
   </div>
 
   <script>
-    // Если поднимешь свой Cloudflare Worker, вставь его ссылку сюда вместо corsproxy.io
     const PROXY_URL = 'https://corsproxy.io/?url=';
     const API_BASE = 'https://ecampus.ncfu.ru/schedule';
 
@@ -434,7 +433,6 @@
       { Id: null, ShortName: "ПИ СКФУ", BranchId: 2, Name: "Пятигорский институт (филиал)" }
     ];
 
-    // Кэш в оперативной памяти + localStorage (живет 6 часов)
     const MEMORY_CACHE = {};
     const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
@@ -513,7 +511,6 @@
       return `Перерыв ${minutes} мин`;
     }
 
-    // Фоновая предзагрузка соседних недель (Prefetching)
     function prefetchAdjacentWeeks() {
       [-1, 1].forEach(offset => {
         const d = new Date(currentMonday);
@@ -545,7 +542,6 @@
       const isoDate = currentMonday.toISOString();
       const cacheKey = `sched_${currentTarget.type}_${currentTarget.id}_${isoDate}`;
 
-      // Мгновенная выдача из кэша
       const cached = getCache(cacheKey);
       if (cached) {
         statusEl.innerText = 'Из кэша (мгновенно)';
@@ -575,7 +571,7 @@
         prefetchAdjacentWeeks();
       } catch (err) {
         statusEl.innerText = 'Ошибка сети';
-        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные. Попробуйте еще раз.</div>';
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные.</div>';
       }
     }
 
@@ -696,15 +692,19 @@
       loadSchedule();
     }
 
+    // Живой поиск
     let searchTimeout = null;
+    let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
 
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
       const query = e.target.value.trim();
+      
       if (query.length < 2) {
         autoList.style.display = 'none';
+        if (currentSearchController) currentSearchController.abort();
         return;
       }
 
@@ -716,50 +716,57 @@
       }
 
       searchTimeout = setTimeout(async () => {
+        if (currentSearchController) currentSearchController.abort();
+        currentSearchController = new AbortController();
+
         try {
-          const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/search?q=${encodeURIComponent(query)}`));
+          const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(query)}`;
+          const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), {
+            signal: currentSearchController.signal
+          });
           const htmlText = await res.text();
           
           const parser = new DOMParser();
           const doc = parser.parseFromString(htmlText, 'text/html');
-          const resultBlock = doc.getElementById('targets-search-result');
           
           const items = [];
-          if (resultBlock) {
-            const links = resultBlock.querySelectorAll('a[href*="/schedule/"]');
-            links.forEach(a => {
-              const href = a.getAttribute('href') || '';
-              const name = a.textContent.trim();
-              const parts = href.split('/').filter(Boolean);
-              
-              const typeStr = parts[1] || '';
-              const id = parseInt(parts[2], 10);
-              
-              let targetType = 2;
-              let typeName = 'Группа';
-              if (typeStr.includes('group')) {
-                targetType = 2;
-                typeName = 'Группа';
-              } else if (typeStr.includes('person') || typeStr.includes('teacher')) {
-                targetType = 1;
-                typeName = 'Преподаватель';
-              } else if (typeStr.includes('aud') || typeStr.includes('room')) {
-                targetType = 3;
-                typeName = 'Аудитория';
-              }
+          const links = doc.querySelectorAll('a[href*="/schedule/group/"], a[href*="/schedule/person/"], a[href*="/schedule/auditorium/"], a[href*="/schedule/teacher/"], a[href*="/schedule/room/"]');
+          
+          links.forEach(a => {
+            const href = a.getAttribute('href') || '';
+            const name = a.textContent.trim();
+            const cleanHref = href.split('?')[0];
+            const parts = cleanHref.split('/').filter(Boolean);
+            
+            const typeStr = parts[1] || '';
+            const id = parseInt(parts[2], 10);
+            
+            let targetType = 2;
+            let typeName = 'Группа';
+            if (typeStr === 'person' || typeStr === 'teacher') {
+              targetType = 1;
+              typeName = 'Преподаватель';
+            } else if (typeStr === 'auditorium' || typeStr === 'room' || typeStr === 'aud') {
+              targetType = 3;
+              typeName = 'Аудитория';
+            } else if (typeStr === 'group') {
+              targetType = 2;
+              typeName = 'Группа';
+            }
 
-              if (id && name) {
-                items.push({ id, name, targetType, typeName });
-              }
-            });
-          }
+            if (id && name && !items.some(it => it.id === id && it.targetType === targetType)) {
+              items.push({ id, name, targetType, typeName });
+            }
+          });
 
           setCache(cacheKey, items);
           renderAutocomplete(items);
         } catch (err) {
-          console.error(err);
+          if (err.name !== 'AbortError') {
+            console.error('Ошибка поиска:', err);
+          }
         }
-      }, 300);
+      }, 250);
     });
 
     function renderAutocomplete(items) {
@@ -792,6 +799,7 @@
       loadSchedule();
     }
 
+    // Логика каталога
     let catalogStep = 1;
     let selectedInstitute = null;
 
