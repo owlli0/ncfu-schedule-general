@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Расписание СКФУ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151d30;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #38bdf8;
+      
+      /* Зеленый фон для лекций */
+      --lecture-bg: rgba(16, 185, 129, 0.15);
+      --lecture-border: rgba(16, 185, 129, 0.45);
+      --lecture-badge: #10b981;
+      
+      /* Оранжевый фон для практик и лаб */
+      --practice-bg: rgba(245, 158, 11, 0.15);
+      --practice-border: rgba(245, 158, 11, 0.45);
+      --practice-badge: #f59e0b;
+
+      --default-bg: rgba(255, 255, 255, 0.05);
+      --default-border: var(--border);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 20px 14px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container { width: 100%; max-width: 880px; }
+
+    /* Поиск и шапка */
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    .status-text { font-size: 0.8rem; color: var(--text-muted); }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+
+    /* Выпадающий список автокомплита */
+    .autocomplete-list {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 260px;
+      overflow-y: auto;
+      z-index: 50;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: none;
+    }
+
+    .autocomplete-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
+    .autocomplete-type { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* Панель переключения недель */
+    .week-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .nav-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .current-week-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #fff;
+      text-align: center;
+    }
+
+    /* Карточки дней */
+    .day-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .day-title { font-size: 1.15rem; font-weight: 700; color: #fff; }
+    .day-date { font-size: 0.88rem; color: var(--text-muted); }
+
+    /* Блок перерыва */
+    .break-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+    .break-indicator::before, .break-indicator::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 0 10px;
+    }
+
+    /* Карточка пары */
+    .lesson-item {
+      display: grid;
+      grid-template-columns: 85px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+    }
+
+    .type-lecture {
+      background: var(--lecture-bg);
+      border-color: var(--lecture-border);
+    }
+    .type-practice, .type-lab {
+      background: var(--practice-bg);
+      border-color: var(--practice-border);
+    }
+    .type-other {
+      background: var(--default-bg);
+      border-color: var(--default-border);
+    }
+
+    .pair-time-block {
+      display: flex;
+      flex-direction: column;
+    }
+    .pair-num { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .pair-hours {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lesson-main { display: flex; flex-direction: column; gap: 4px; }
+    .lesson-title { font-size: 0.95rem; font-weight: 600; color: #fff; line-height: 1.3; }
+    .lesson-meta { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; flex-wrap: wrap; }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .badge-lec { background: var(--lecture-badge); color: #000; }
+    .badge-prac { background: var(--practice-badge); color: #000; }
+    .badge-def { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .subgroup-tag {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .room-tag {
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .teacher-block {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: right;
+      font-weight: 500;
+      max-width: 240px;
+    }
+
+    .empty-day {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.9rem;
+      padding: 10px 0;
+    }
+
+    @media (max-width: 650px) {
+      .lesson-item {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .teacher-block { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <h1 id="groupTitle">ИНС-б-о-26-2</h1>
+        <div id="statusText" class="status-text">Загрузка...</div>
+      </div>
+
+      <!-- Живой поиск -->
+      <div class="search-box">
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-input" 
+          placeholder="Поиск: введите группу (например, ИНС-б-о-26-2) или фамилию..." 
+          autocomplete="off"
+        />
+        <div id="autocompleteList" class="autocomplete-list"></div>
+      </div>
+    </header>
+
+    <!-- Переключение недель -->
+    <div class="week-nav-bar">
+      <button class="nav-btn" onclick="changeWeek(-1)">← Предыдущая</button>
+      <div id="currentWeekLabel" class="current-week-label">Неделя</div>
+      <button class="nav-btn" onclick="changeWeek(1)">Следующая →</button>
+    </div>
+
+    <div id="scheduleContainer"></div>
+  </div>
+
+  <script>
+    // Публичный CORS-прокси для прямого доступа к API СКФУ
+    const PROXY_URL = 'https://corsproxy.io/?url=';
+    const API_BASE = 'https://ecampus.ncfu.ru/schedule';
+
+    const CALL_TIMES = {
+      1: { start: "08:00", end: "09:30" },
+      2: { start: "09:40", end: "11:10" },
+      3: { start: "11:20", end: "12:50" },
+      4: { start: "13:20", end: "14:50" },
+      5: { start: "15:00", end: "16:30" },
+      6: { start: "16:50", end: "18:20" },
+      7: { start: "18:30", end: "20:00" },
+      8: { start: "20:10", end: "21:40" }
+    };
+
+    // Текущее состояние
+    let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || {
+      id: 19931,
+      name: 'ИНС-б-о-26-2',
+      type: 2
+    };
+
+    // Текущий выбранный понедельник (по умолчанию 7 сентября 2026 для учебного года)
+    let currentMonday = getMonday(new Date(2026, 8, 7));
+
+    function getMonday(d) {
+      d = new Date(d);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    }
+
+    function extractTime(isoStr, pairNum, isEnd = false) {
+      if (isoStr && isoStr.includes('T')) {
+        const timePart = isoStr.split('T')[1];
+        const [h, m] = timePart.split(':');
+        return `${h}:${m}`;
+      }
+      if (CALL_TIMES[pairNum]) {
+        return isEnd ? CALL_TIMES[pairNum].end : CALL_TIMES[pairNum].start;
+      }
+      return '—';
+    }
+
+    function timeToMinutes(timeStr) {
+      if (!timeStr || !timeStr.includes(':')) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function formatLocation(rawName) {
+      if (!rawName) return '';
+      const text = String(rawName).trim();
+      if (text.includes('-')) {
+        const parts = text.split('-');
+        return `Корпус ${parts[0]}, Ауд. ${parts[1]}`;
+      }
+      return `Ауд. ${text}`;
+    }
+
+    function formatBreak(minutes) {
+      if (minutes <= 0) return null;
+      if (minutes >= 60) {
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        return `Перерыв ${h} ч ${m > 0 ? m + ' мин' : ''}`;
+      }
+      return `Перерыв ${minutes} мин`;
+    }
+
+    // Загрузка расписания
+    async function loadSchedule() {
+      const statusEl = document.getElementById('statusText');
+      const container = document.getElementById('scheduleContainer');
+      document.getElementById('groupTitle').innerText = currentTarget.name;
+
+      const dateStr = currentMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+      document.getElementById('currentWeekLabel').innerText = `С ${dateStr}`;
+      
+      statusEl.innerText = 'Загрузка с сервера СКФУ...';
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 40px 0;">Загрузка данных...</div>';
+
+      const isoDate = currentMonday.toISOString();
+
+      try {
+        const response = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSchedule`), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: isoDate,
+            Id: currentTarget.id,
+            targetType: currentTarget.type
+          })
+        });
+
+        const data = await response.json();
+        statusEl.innerText = 'Актуально';
+        renderSchedule(data);
+      } catch (err) {
+        statusEl.innerText = 'Ошибка сети';
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные с сервера СКФУ.</div>';
+      }
+    }
+
+    function renderSchedule(days) {
+      const container = document.getElementById('scheduleContainer');
+      container.innerHTML = '';
+
+      if (!days || !days.length) {
+        container.innerHTML = '<div class="day-card empty-day">Пар на этой неделе нет</div>';
+        return;
+      }
+
+      days.forEach(day => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+
+        let dateStr = '';
+        if (day.Date) {
+          const datePart = day.Date.split('T')[0];
+          const [y, m, d] = datePart.split('-');
+          const localDate = new Date(y, m - 1, d);
+          dateStr = localDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+        }
+
+        card.innerHTML = `
+          <div class="day-header">
+            <span class="day-title">${day.WeekDay || ''}</span>
+            <span class="day-date">${dateStr}</span>
+          </div>
+        `;
+
+        const lessons = day.Lessons || [];
+        if (!lessons.length) {
+          card.innerHTML += '<div class="empty-day">Пар нет</div>';
+        } else {
+          lessons.sort((a, b) => (a.PairNumberStart || 0) - (b.PairNumberStart || 0));
+
+          let prevEndTimeStr = null;
+
+          lessons.forEach((l, index) => {
+            const pairNum = l.PairNumberStart || (index + 1);
+            const startTimeStr = extractTime(l.TimeBegin, pairNum, false);
+            const endTimeStr = extractTime(l.TimeEnd, pairNum, true);
+
+            if (prevEndTimeStr) {
+              const prevMin = timeToMinutes(prevEndTimeStr);
+              const currMin = timeToMinutes(startTimeStr);
+              const diffMin = currMin - prevMin;
+
+              if (diffMin > 0) {
+                const breakDiv = document.createElement('div');
+                breakDiv.className = 'break-indicator';
+                breakDiv.textContent = formatBreak(diffMin);
+                card.appendChild(breakDiv);
+              }
+            }
+
+            prevEndTimeStr = endTimeStr;
+
+            const item = document.createElement('div');
+            const rawType = (l.LessonType || '').trim();
+            const typeLower = rawType.toLowerCase();
+
+            let typeClass = 'type-other';
+            let badgeClass = 'badge-def';
+            if (typeLower.includes('лекц')) {
+              typeClass = 'type-lecture';
+              badgeClass = 'badge-lec';
+            } else if (typeLower.includes('практ') || typeLower.includes('лаб') || typeLower.includes('семин')) {
+              typeClass = 'type-practice';
+              badgeClass = 'badge-prac';
+            }
+
+            item.className = `lesson-item ${typeClass}`;
+
+            const audName = (l.Aud && l.Aud.Name) ? l.Aud.Name : '';
+            const roomFormatted = formatLocation(audName);
+            const teacherName = (l.Teacher && l.Teacher.Name) ? l.Teacher.Name.trim() : '';
+
+            let subgroup = '';
+            if (l.Groups && l.Groups[0] && l.Groups[0].Subgroup) {
+              subgroup = l.Groups[0].Subgroup.trim();
+            }
+
+            item.innerHTML = `
+              <div class="pair-time-block">
+                <span class="pair-num">${pairNum} пара</span>
+                <span class="pair-hours">${startTimeStr} - ${endTimeStr}</span>
+              </div>
+              <div class="lesson-main">
+                <div class="lesson-title">${l.Discipline || 'Предмет'}</div>
+                <div class="lesson-meta">
+                  ${rawType ? `<span class="badge ${badgeClass}">${rawType}</span>` : ''}
+                  ${subgroup ? `<span class="subgroup-tag">Подгруппа ${subgroup}</span>` : ''}
+                  ${roomFormatted ? `<span class="room-tag">📍 ${roomFormatted}</span>` : ''}
+                </div>
+              </div>
+              <div class="teacher-block">
+                ${teacherName ? `👤 ${teacherName}` : ''}
+              </div>
+            `;
+            card.appendChild(item);
+          });
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    function changeWeek(offset) {
+      currentMonday.setDate(currentMonday.getDate() + (offset * 7));
+      loadSchedule();
+    }
+
+    // Живой поиск групп / преподавателей
+    let searchTimeout = null;
+    const searchInput = document.getElementById('searchInput');
+    const autoList = document.getElementById('autocompleteList');
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim();
+      if (query.length < 2) {
+        autoList.style.display = 'none';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/Search?query=${encodeURIComponent(query)}`));
+          const results = await res.json();
+          renderAutocomplete(results);
+        } catch (err) {
+          console.error(err);
+        }
+      }, 300);
+    });
+
+    function renderAutocomplete(items) {
+      if (!items || !items.length) {
+        autoList.style.display = 'none';
+        return;
+      }
+      autoList.innerHTML = '';
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        
+        let typeName = 'Группа';
+        if (item.TargetType === 1) typeName = 'Преподаватель';
+        if (item.TargetType === 3) typeName = 'Аудитория';
+
+        div.innerHTML = `
+          <span>${item.Name || item.Description}</span>
+          <span class="autocomplete-type">${typeName}</span>
+        `;
+        div.onclick = () => {
+          currentTarget = {
+            id: item.Id,
+            name: item.Name || item.Description,
+            type: item.TargetType || 2
+          };
+          localStorage.setItem('savedTarget', JSON.stringify(currentTarget));
+          autoList.style.display = 'none';
+          searchInput.value = '';
+          loadSchedule();
+        };
+        autoList.appendChild(div);
+      });
+      autoList.style.display = 'block';
+    }
+
+    // Закрытие автокомплита при клике вне поля
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !autoList.contains(e.target)) {
+        autoList.style.display = 'none';
+      }
+    });
+
+    loadSchedule();
+  </script>
+</body>
+</html>
