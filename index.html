@@ -127,6 +127,7 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
     .autocomplete-type { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
+    /* Панель недель */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -160,6 +161,7 @@
       text-align: center;
     }
 
+    /* Карточки дней */
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -372,7 +374,7 @@
           />
           <div id="autocompleteList" class="autocomplete-list"></div>
         </div>
-        <button class="catalog-btn" onclick="openCatalog()">🏛️ Все факультеты</button>
+        <button class="catalog-btn" onclick="openCatalog()">🏛️ Каталог СКФУ</button>
       </div>
     </header>
 
@@ -392,7 +394,7 @@
         <button class="close-modal" onclick="closeCatalog()">&times;</button>
       </div>
       <div class="modal-body">
-        <div id="breadcrumbs" class="catalog-breadcrumbs" style="display: none;" onclick="goBackCatalog()">← Назад к списку</div>
+        <div id="breadcrumbs" class="catalog-breadcrumbs" style="display: none;" onclick="goBackCatalog()">← Назад</div>
         <div id="catalogContainer" class="catalog-list"></div>
       </div>
     </div>
@@ -412,6 +414,28 @@
       7: { start: "18:30", end: "20:00" },
       8: { start: "20:10", end: "21:40" }
     };
+
+    // Точный реестр всех институтов и филиалов СКФУ
+    const INSTITUTES = [
+      { Id: 4336, ShortName: "ВШКИ", BranchId: 1, Name: "Высшая школа креативных индустрий" },
+      { Id: 2740, ShortName: "ГИ", BranchId: 1, Name: "Гуманитарный институт" },
+      { Id: 4436, ShortName: "ККИВШКИ", BranchId: 1, Name: "Колледж креативных индустрий" },
+      { Id: 4325, ShortName: "КСКФУ", BranchId: 1, Name: "Колледж СКФУ" },
+      { Id: 4262, ShortName: "МБФ", BranchId: 1, Name: "Медико-биологический факультет" },
+      { Id: 4407, ShortName: "ИПИнж", BranchId: 1, Name: "Институт перспективной инженерии" },
+      { Id: 4286, ShortName: "ППФ", BranchId: 1, Name: "Психолого-педагогический факультет" },
+      { Id: 4320, ShortName: "ФМКН", BranchId: 1, Name: "Факультет математики и компьютерных наук им. Н.И. Червякова" },
+      { Id: 4411, ShortName: "ФМО", BranchId: 1, Name: "Факультет международных отношений" },
+      { Id: 4383, ShortName: "ФНИ", BranchId: 1, Name: "Факультет нефтегазовой инженерии" },
+      { Id: 4287, ShortName: "ФПИБ", BranchId: 1, Name: "Факультет пищевой инженерии и биотехнологий" },
+      { Id: 4288, ShortName: "ФФКС", BranchId: 1, Name: "Факультет физической культуры и спорта" },
+      { Id: 4197, ShortName: "ФТФ", BranchId: 1, Name: "Физико-технический факультет" },
+      { Id: 4189, ShortName: "ХимФ", BranchId: 1, Name: "Химический факультет" },
+      { Id: 2798, ShortName: "ИЭиУ", BranchId: 1, Name: "Институт экономики и управления" },
+      { Id: 2716, ShortName: "ЮИ", BranchId: 1, Name: "Юридический институт" },
+      { Id: null, ShortName: "НТИ СКФУ", BranchId: 4, Name: "Невинномысский технологический институт (филиал)" },
+      { Id: null, ShortName: "ПИ СКФУ", BranchId: 2, Name: "Пятигорский институт (филиал)" }
+    ];
 
     let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || {
       id: 19931,
@@ -475,7 +499,7 @@
       document.getElementById('currentWeekLabel').innerText = `С ${dateStr}`;
       
       statusEl.innerText = 'Загрузка...';
-      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 40px 0;">Загрузка данных...</div>';
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 40px 0;">Загрузка расписания...</div>';
 
       const isoDate = currentMonday.toISOString();
 
@@ -495,7 +519,7 @@
         renderSchedule(data);
       } catch (err) {
         statusEl.innerText = 'Ошибка сети';
-        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные.</div>';
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные с сервера СКФУ.</div>';
       }
     }
 
@@ -580,7 +604,6 @@
               subgroup = l.Groups[0].Subgroup.trim();
             }
 
-            // Для преподавателей показываем название группы
             let extraGroupInfo = '';
             if (currentTarget.type === 1 && l.Groups && l.Groups.length > 0) {
               extraGroupInfo = l.Groups.map(g => g.Name).join(', ');
@@ -706,71 +729,30 @@
       loadSchedule();
     }
 
-    // ДИНАМИЧЕСКИЙ КАТАЛОГ С САЙТА СКФУ
-    let cachedInstitutes = null;
+    // КАТАЛОГ С ТОЧНЫМИ ID
     let catalogStep = 1;
     let selectedInstitute = null;
 
     function openCatalog() {
       document.getElementById('catalogModal').style.display = 'flex';
-      loadDynamicInstitutes();
+      renderInstitutesList();
     }
 
     function closeCatalog() {
       document.getElementById('catalogModal').style.display = 'none';
     }
 
-    async function loadDynamicInstitutes() {
+    function renderInstitutesList() {
       catalogStep = 1;
-      document.getElementById('modalTitle').innerText = 'Выбор факультета / института';
+      document.getElementById('modalTitle').innerText = 'Выбор института / факультета';
       document.getElementById('breadcrumbs').style.display = 'none';
       const container = document.getElementById('catalogContainer');
-      
-      if (cachedInstitutes) {
-        renderInstitutesList(cachedInstitutes);
-        return;
-      }
-
-      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка институтов с сервера СКФУ...</div>';
-
-      try {
-        const res = await fetch(PROXY_URL + encodeURIComponent('https://ecampus.ncfu.ru/schedule'));
-        const htmlText = await res.text();
-        
-        // Извлекаем массив JSON институтов из скриптов страницы
-        const match = htmlText.match(/var\s+institutes\s*=\s*(\[\{.*?\}\]);/s) || htmlText.match(/institutes:\s*(\[\{.*?\}\])/s);
-        
-        if (match && match[1]) {
-          cachedInstitutes = JSON.parse(match[1]);
-        } else {
-          // Если встроенного массива нет в явном виде, парсим спаны со страницы
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(htmlText, 'text/html');
-          const panelSpans = doc.querySelectorAll('.panel-heading span[data-bind*="Name"]');
-          
-          cachedInstitutes = [];
-          panelSpans.forEach((span, idx) => {
-            cachedInstitutes.push({
-              Id: idx + 1,
-              Name: span.textContent.trim(),
-              BranchId: 1
-            });
-          });
-        }
-
-        renderInstitutesList(cachedInstitutes);
-      } catch (err) {
-        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить список институтов.</div>';
-      }
-    }
-
-    function renderInstitutesList(list) {
-      const container = document.getElementById('catalogContainer');
       container.innerHTML = '';
-      list.forEach(inst => {
+
+      INSTITUTES.forEach(inst => {
         const div = document.createElement('div');
         div.className = 'catalog-item';
-        div.textContent = inst.Name || inst.name;
+        div.innerHTML = `<strong>${inst.ShortName}</strong> — ${inst.Name}`;
         div.onclick = () => loadSpecialities(inst);
         container.appendChild(div);
       });
@@ -779,20 +761,19 @@
     async function loadSpecialities(inst) {
       catalogStep = 2;
       selectedInstitute = inst;
-      const instName = inst.Name || inst.name;
-      document.getElementById('modalTitle').innerText = instName;
+      document.getElementById('modalTitle').innerText = inst.Name;
       document.getElementById('breadcrumbs').style.display = 'inline-block';
       const container = document.getElementById('catalogContainer');
-      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка направлений...</div>';
-
-      const instId = inst.Id || inst.id;
-      const branchId = inst.BranchId || inst.branchId || 1;
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка специальностей...</div>';
 
       try {
         const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSpecialities`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ instituteId: instId, branchId: branchId })
+          body: JSON.stringify({ 
+            instituteId: inst.Id, 
+            branchId: inst.BranchId 
+          })
         });
         const specs = await res.json();
         
@@ -806,7 +787,7 @@
           const div = document.createElement('div');
           div.className = 'catalog-item';
           div.textContent = spec.Name;
-          div.onclick = () => loadGroups(instId, branchId, spec.Name);
+          div.onclick = () => loadGroups(inst.Id, inst.BranchId, spec.Name);
           container.appendChild(div);
         });
       } catch (err) {
@@ -824,7 +805,11 @@
         const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetAcademicGroups`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ instituteId: instId, specialty: specName, branchId: branchId })
+          body: JSON.stringify({ 
+            instituteId: instId, 
+            specialty: specName, 
+            branchId: branchId 
+          })
         });
         const groupsData = await res.json();
         
@@ -836,7 +821,7 @@
 
         groupsData.forEach(block => {
           const title = document.createElement('div');
-          title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 10px 0 4px 0; font-size: 0.9rem;';
+          title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 12px 0 6px 0; font-size: 0.9rem;';
           title.textContent = block.Key || 'Группы';
           container.appendChild(title);
 
@@ -857,10 +842,7 @@
       if (catalogStep === 3) {
         loadSpecialities(selectedInstitute);
       } else if (catalogStep === 2) {
-        catalogStep = 1;
-        document.getElementById('modalTitle').innerText = 'Выбор факультета / института';
-        document.getElementById('breadcrumbs').style.display = 'none';
-        renderInstitutesList(cachedInstitutes);
+        renderInstitutesList();
       }
     }
 
