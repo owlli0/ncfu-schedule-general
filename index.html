@@ -127,7 +127,6 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
     .autocomplete-type { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Панель недель */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -161,7 +160,6 @@
       text-align: center;
     }
 
-    /* Карточки дней */
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -278,7 +276,6 @@
       padding: 10px 0;
     }
 
-    /* Модальное окно */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -401,6 +398,7 @@
   </div>
 
   <script>
+    // Если поднимешь свой Cloudflare Worker, вставь его ссылку сюда вместо corsproxy.io
     const PROXY_URL = 'https://corsproxy.io/?url=';
     const API_BASE = 'https://ecampus.ncfu.ru/schedule';
 
@@ -415,7 +413,6 @@
       8: { start: "20:10", end: "21:40" }
     };
 
-    // Точный реестр всех институтов и филиалов СКФУ
     const INSTITUTES = [
       { Id: 4336, ShortName: "ВШКИ", BranchId: 1, Name: "Высшая школа креативных индустрий" },
       { Id: 2740, ShortName: "ГИ", BranchId: 1, Name: "Гуманитарный институт" },
@@ -436,6 +433,32 @@
       { Id: null, ShortName: "НТИ СКФУ", BranchId: 4, Name: "Невинномысский технологический институт (филиал)" },
       { Id: null, ShortName: "ПИ СКФУ", BranchId: 2, Name: "Пятигорский институт (филиал)" }
     ];
+
+    // Кэш в оперативной памяти + localStorage (живет 6 часов)
+    const MEMORY_CACHE = {};
+    const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+    function getCache(key) {
+      if (MEMORY_CACHE[key]) return MEMORY_CACHE[key];
+      try {
+        const stored = localStorage.getItem('cache_' + key);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Date.now() - parsed.ts < CACHE_TTL_MS) {
+            MEMORY_CACHE[key] = parsed.data;
+            return parsed.data;
+          }
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function setCache(key, data) {
+      MEMORY_CACHE[key] = data;
+      try {
+        localStorage.setItem('cache_' + key, JSON.stringify({ ts: Date.now(), data }));
+      } catch (e) {}
+    }
 
     let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || {
       id: 19931,
@@ -490,6 +513,27 @@
       return `Перерыв ${minutes} мин`;
     }
 
+    // Фоновая предзагрузка соседних недель (Prefetching)
+    function prefetchAdjacentWeeks() {
+      [-1, 1].forEach(offset => {
+        const d = new Date(currentMonday);
+        d.setDate(d.getDate() + (offset * 7));
+        const iso = d.toISOString();
+        const cacheKey = `sched_${currentTarget.type}_${currentTarget.id}_${iso}`;
+        if (!getCache(cacheKey)) {
+          fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSchedule`), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              date: iso,
+              Id: currentTarget.id,
+              targetType: currentTarget.type
+            })
+          }).then(r => r.json()).then(data => setCache(cacheKey, data)).catch(() => {});
+        }
+      });
+    }
+
     async function loadSchedule() {
       const statusEl = document.getElementById('statusText');
       const container = document.getElementById('scheduleContainer');
@@ -498,10 +542,20 @@
       const dateStr = currentMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
       document.getElementById('currentWeekLabel').innerText = `С ${dateStr}`;
       
+      const isoDate = currentMonday.toISOString();
+      const cacheKey = `sched_${currentTarget.type}_${currentTarget.id}_${isoDate}`;
+
+      // Мгновенная выдача из кэша
+      const cached = getCache(cacheKey);
+      if (cached) {
+        statusEl.innerText = 'Из кэша (мгновенно)';
+        renderSchedule(cached);
+        prefetchAdjacentWeeks();
+        return;
+      }
+
       statusEl.innerText = 'Загрузка...';
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 40px 0;">Загрузка расписания...</div>';
-
-      const isoDate = currentMonday.toISOString();
 
       try {
         const response = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSchedule`), {
@@ -515,11 +569,13 @@
         });
 
         const data = await response.json();
+        setCache(cacheKey, data);
         statusEl.innerText = 'Актуально';
         renderSchedule(data);
+        prefetchAdjacentWeeks();
       } catch (err) {
         statusEl.innerText = 'Ошибка сети';
-        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные с сервера СКФУ.</div>';
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные. Попробуйте еще раз.</div>';
       }
     }
 
@@ -640,7 +696,6 @@
       loadSchedule();
     }
 
-    // Живой поиск
     let searchTimeout = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
@@ -650,6 +705,13 @@
       const query = e.target.value.trim();
       if (query.length < 2) {
         autoList.style.display = 'none';
+        return;
+      }
+
+      const cacheKey = 'search_' + query.toLowerCase();
+      const cached = getCache(cacheKey);
+      if (cached) {
+        renderAutocomplete(cached);
         return;
       }
 
@@ -692,11 +754,12 @@
             });
           }
 
+          setCache(cacheKey, items);
           renderAutocomplete(items);
         } catch (err) {
           console.error(err);
         }
-      }, 350);
+      }, 300);
     });
 
     function renderAutocomplete(items) {
@@ -729,7 +792,6 @@
       loadSchedule();
     }
 
-    // КАТАЛОГ С ТОЧНЫМИ ID
     let catalogStep = 1;
     let selectedInstitute = null;
 
@@ -764,78 +826,95 @@
       document.getElementById('modalTitle').innerText = inst.Name;
       document.getElementById('breadcrumbs').style.display = 'inline-block';
       const container = document.getElementById('catalogContainer');
-      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка специальностей...</div>';
+
+      const cacheKey = `specs_${inst.Id}_${inst.BranchId}`;
+      const cached = getCache(cacheKey);
+      if (cached) {
+        renderSpecsList(inst, cached);
+        return;
+      }
+
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка направлений...</div>';
 
       try {
         const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSpecialities`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            instituteId: inst.Id, 
-            branchId: inst.BranchId 
-          })
+          body: JSON.stringify({ instituteId: inst.Id, branchId: inst.BranchId })
         });
         const specs = await res.json();
-        
-        container.innerHTML = '';
-        if (!specs || !specs.length) {
-          container.innerHTML = '<div class="empty-day">Направления не найдены</div>';
-          return;
-        }
-
-        specs.forEach(spec => {
-          const div = document.createElement('div');
-          div.className = 'catalog-item';
-          div.textContent = spec.Name;
-          div.onclick = () => loadGroups(inst.Id, inst.BranchId, spec.Name);
-          container.appendChild(div);
-        });
+        setCache(cacheKey, specs);
+        renderSpecsList(inst, specs);
       } catch (err) {
         container.innerHTML = '<div class="empty-day" style="color:#ef4444;">Не удалось загрузить специальности</div>';
       }
+    }
+
+    function renderSpecsList(inst, specs) {
+      const container = document.getElementById('catalogContainer');
+      container.innerHTML = '';
+      if (!specs || !specs.length) {
+        container.innerHTML = '<div class="empty-day">Направления не найдены</div>';
+        return;
+      }
+      specs.forEach(spec => {
+        const div = document.createElement('div');
+        div.className = 'catalog-item';
+        div.textContent = spec.Name;
+        div.onclick = () => loadGroups(inst.Id, inst.BranchId, spec.Name);
+        container.appendChild(div);
+      });
     }
 
     async function loadGroups(instId, branchId, specName) {
       catalogStep = 3;
       document.getElementById('modalTitle').innerText = specName;
       const container = document.getElementById('catalogContainer');
+
+      const cacheKey = `groups_${instId}_${branchId}_${specName}`;
+      const cached = getCache(cacheKey);
+      if (cached) {
+        renderGroupsList(cached);
+        return;
+      }
+
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка групп...</div>';
 
       try {
         const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetAcademicGroups`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            instituteId: instId, 
-            specialty: specName, 
-            branchId: branchId 
-          })
+          body: JSON.stringify({ instituteId: instId, specialty: specName, branchId: branchId })
         });
         const groupsData = await res.json();
-        
-        container.innerHTML = '';
-        if (!groupsData || !groupsData.length) {
-          container.innerHTML = '<div class="empty-day">Группы не найдены</div>';
-          return;
-        }
-
-        groupsData.forEach(block => {
-          const title = document.createElement('div');
-          title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 12px 0 6px 0; font-size: 0.9rem;';
-          title.textContent = block.Key || 'Группы';
-          container.appendChild(title);
-
-          (block.Value || []).forEach(grp => {
-            const div = document.createElement('div');
-            div.className = 'catalog-item';
-            div.textContent = grp.Name;
-            div.onclick = () => selectTarget(grp.Id, grp.Name, 2);
-            container.appendChild(div);
-          });
-        });
+        setCache(cacheKey, groupsData);
+        renderGroupsList(groupsData);
       } catch (err) {
         container.innerHTML = '<div class="empty-day" style="color:#ef4444;">Не удалось загрузить группы</div>';
       }
+    }
+
+    function renderGroupsList(groupsData) {
+      const container = document.getElementById('catalogContainer');
+      container.innerHTML = '';
+      if (!groupsData || !groupsData.length) {
+        container.innerHTML = '<div class="empty-day">Группы не найдены</div>';
+        return;
+      }
+      groupsData.forEach(block => {
+        const title = document.createElement('div');
+        title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 12px 0 6px 0; font-size: 0.9rem;';
+        title.textContent = block.Key || 'Группы';
+        container.appendChild(title);
+
+        (block.Value || []).forEach(grp => {
+          const div = document.createElement('div');
+          div.className = 'catalog-item';
+          div.textContent = grp.Name;
+          div.onclick = () => selectTarget(grp.Id, grp.Name, 2);
+          container.appendChild(div);
+        });
+      });
     }
 
     function goBackCatalog() {
