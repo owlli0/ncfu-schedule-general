@@ -149,7 +149,7 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.06); color: var(--accent); }
     .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Навигация по неделям + кастомный календарь */
+    /* Навигация по неделям + календарь */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -557,7 +557,6 @@
 
       <button class="nav-btn" onclick="changeWeek(1)">Вперед →</button>
 
-      <!-- Интерактивный кастомный календарь -->
       <div id="calendarPopup" class="custom-calendar-popup">
         <div class="calendar-header">
           <button class="cal-nav-btn" onclick="changeCalMonth(-1)">←</button>
@@ -571,7 +570,6 @@
     <div id="scheduleContainer"></div>
   </div>
 
-  <!-- Модалка каталога -->
   <div id="catalogModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -585,7 +583,6 @@
     </div>
   </div>
 
-  <!-- Модалка настройки темы -->
   <div id="themeModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -949,7 +946,7 @@
       loadSchedule();
     }
 
-    // ЛОГИКА КАСТОМНОГО КАЛЕНДАРЯ
+    // Календарь
     const calendarPopup = document.getElementById('calendarPopup');
     const calendarGrid = document.getElementById('calendarGrid');
 
@@ -987,7 +984,7 @@
 
       const firstDayOfMonth = new Date(year, month, 1);
       let startDay = firstDayOfMonth.getDay();
-      startDay = startDay === 0 ? 6 : startDay - 1; // 0 = Пн
+      startDay = startDay === 0 ? 6 : startDay - 1;
 
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -1031,31 +1028,63 @@
       }
     }
 
-    // ПОИСК С ФОЛЛБЭКОМ НА РЕГИСТР И ПРЕОБРАЗОВАНИЕМ
+    // ПОИСК С ОБРАБОТКОЙ 302 РЕДИРЕКТА
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
 
     async function fetchSearchQuery(queryText, signal) {
-      const targetUrl = `${API_BASE}/search?q=${queryText}`;
+      const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(queryText)}`;
       const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { signal });
+      const finalUrl = decodeURIComponent(res.url || '');
       const htmlText = await res.text();
       
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlText, 'text/html');
-      
       const items = [];
+
+      // 1. Проверяем, перенаправил ли сервер 302 редиректом напрямую на сущность
+      const urlPattern = /\/schedule\/(teacher|person|group|auditorium|room)\/(\d+)/i;
+      const match = finalUrl.match(urlPattern) || htmlText.match(urlPattern);
+
+      if (match) {
+        const typeStr = match[1].toLowerCase();
+        const id = parseInt(match[2], 10);
+        let targetType = 2;
+        let typeName = 'Группа';
+        if (typeStr === 'teacher' || typeStr === 'person') {
+          targetType = 1;
+          typeName = 'Преподаватель';
+        } else if (typeStr === 'auditorium' || typeStr === 'room') {
+          targetType = 3;
+          typeName = 'Аудитория';
+        }
+
+        // Извлекаем ФИО/название из тега <title> или заголовка
+        let name = doc.title ? doc.title.replace(/-?\s*eCampus.*/i, '').trim() : '';
+        if (!name || name === 'Результаты поиска') {
+          const headerEl = doc.querySelector('h2, h3, h1, .breadcrumb li.active');
+          if (headerEl) {
+            name = headerEl.textContent.replace(/Расписание занятий( для преподавателя| группы| в аудитории)?/i, '').trim();
+          }
+        }
+        if (!name) name = queryText;
+
+        if (id) {
+          items.push({ id, name, targetType, typeName });
+        }
+      }
+
+      // 2. Если это список ссылок
       const links = doc.querySelectorAll('a[href*="/schedule/"]');
-      
       links.forEach(a => {
         const href = a.getAttribute('href') || '';
         const name = a.textContent.replace(/\s+/g, ' ').trim();
-        if (!name || name === 'Расписание' || name.toLowerCase().includes('войти')) return;
+        if (!name || name === 'Расписание' || name.toLowerCase().includes('войти') || name.includes('<-') || name.includes('->')) return;
 
         const cleanHref = href.split('?')[0];
         const parts = cleanHref.split('/').filter(Boolean);
-        
         const typeIndex = parts.indexOf('schedule');
         if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
 
@@ -1106,10 +1135,8 @@
         currentSearchController = new AbortController();
 
         try {
-          // 1. Пробуем исходный запрос
           let items = await fetchSearchQuery(query, currentSearchController.signal);
 
-          // 2. Если пусто — пробуем с заглавной буквы (например "Ярцева")
           if (!items.length) {
             const capitalized = query.charAt(0).toUpperCase() + query.slice(1);
             items = await fetchSearchQuery(capitalized, currentSearchController.signal);
@@ -1155,7 +1182,7 @@
       loadSchedule();
     }
 
-    // КАТАЛОГ ФАКУЛЬТЕТОВ И ГРУПП
+    // Каталог
     let catalogStep = 1;
     let selectedInstitute = null;
 
@@ -1289,7 +1316,7 @@
       }
     }
 
-    // ТЕМЫ И КАСТОМИЗАЦИЯ ЦВЕТОВ
+    // Темы
     const THEME_PRESETS = {
       dark: {
         '--bg': '#0b0f19',
@@ -1397,7 +1424,6 @@
       document.getElementById('themeModal').style.display = 'none';
     }
 
-    // Закрытие по клику вне элементов
     document.addEventListener('click', (e) => {
       if (!searchInput.contains(e.target) && !autoList.contains(e.target)) {
         autoList.style.display = 'none';
