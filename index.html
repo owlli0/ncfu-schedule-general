@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.2 -->
+  <!-- x.3 дизайн -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -277,7 +277,7 @@
       background-color: #000;
     }
 
-    /* Карточки дней */
+    /* Карточки дней (Desktop) */
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -464,7 +464,6 @@
       display: inline-block;
     }
 
-    /* Настройки тем */
     .theme-presets {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -512,12 +511,212 @@
     .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
     .color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 8px; }
 
+    /* ========================================================
+       АДАПТИВНЫЙ И ЭРГОНОМИЧНЫЙ ДИЗАЙН ДЛЯ ТЕЛЕФОНОВ (≤ 650px)
+       ======================================================== */
     @media (max-width: 650px) {
-      .lesson-item { grid-template-columns: 1fr; gap: 8px; }
-      .teacher-block { text-align: left; }
-      .search-row { flex-direction: column; align-items: stretch; }
-      .week-nav-bar { flex-wrap: wrap; justify-content: center; }
-      .custom-calendar-popup { width: 95%; left: 2.5%; transform: none; }
+      body {
+        padding: 0 8px 24px 8px;
+      }
+
+      /* Закрепленный компактный верхний блок */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 45;
+        background: var(--bg);
+        padding: 8px 4px 10px 4px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        gap: 8px;
+      }
+
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+      }
+
+      h1 {
+        font-size: 1.05rem;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 65vw;
+      }
+
+      .header-actions {
+        gap: 6px;
+      }
+
+      .theme-btn {
+        padding: 4px 8px;
+        font-size: 0.78rem;
+        border-radius: 8px;
+      }
+
+      .status-text {
+        display: none; /* скрываем второстепенный текст на смартфонах */
+      }
+
+      .search-row {
+        display: flex;
+        flex-direction: row;
+        gap: 6px;
+      }
+
+      .search-input {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+      }
+
+      .catalog-btn {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+        border-radius: 8px;
+      }
+
+      /* Компактная полоса навигации недели */
+      .week-nav-bar {
+        padding: 5px 6px;
+        margin-bottom: 10px;
+        gap: 4px;
+        border-radius: 10px;
+      }
+
+      .nav-btn {
+        padding: 6px 8px;
+        font-size: 0.78rem;
+        border-radius: 6px;
+      }
+
+      .date-btn {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        gap: 4px;
+      }
+
+      .custom-calendar-popup {
+        width: 94vw;
+        max-width: 320px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px;
+      }
+
+      /* Компактные карточки дней */
+      .day-card {
+        padding: 8px 10px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+      }
+
+      .day-header {
+        margin-bottom: 6px;
+        padding-bottom: 4px;
+      }
+
+      .day-title {
+        font-size: 0.95rem;
+      }
+
+      .day-date {
+        font-size: 0.75rem;
+      }
+
+      .break-indicator {
+        margin: 4px 0;
+        font-size: 0.7rem;
+      }
+
+      .break-indicator::before, .break-indicator::after {
+        margin: 0 6px;
+      }
+
+      /* Двухстрочная эргономичная карточка пары */
+      .lesson-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+          "time teacher"
+          "main main";
+        padding: 6px 8px;
+        gap: 4px 6px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+      }
+
+      .pair-time-block {
+        grid-area: time;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .pair-num {
+        font-size: 0.76rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 1px 4px;
+        border-radius: 4px;
+      }
+
+      .pair-hours {
+        font-size: 0.72rem;
+        margin-top: 0;
+        opacity: 0.85;
+      }
+
+      .teacher-block {
+        grid-area: teacher;
+        font-size: 0.75rem;
+        text-align: right;
+        max-width: 50vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .lesson-main {
+        grid-area: main;
+        gap: 3px;
+      }
+
+      .lesson-title {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        font-weight: 600;
+      }
+
+      .lesson-meta {
+        gap: 4px;
+        font-size: 0.7rem;
+      }
+
+      .badge {
+        font-size: 0.62rem;
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+
+      .subgroup-tag, .room-tag {
+        font-size: 0.68rem;
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+
+      .modal-content {
+        max-height: 90vh;
+        border-radius: 12px;
+      }
+      .modal-header { padding: 10px 14px; }
+      .modal-header h2 { font-size: 0.98rem; }
+      .modal-body { padding: 10px 12px; }
     }
   </style>
 </head>
@@ -538,7 +737,7 @@
             type="text" 
             id="searchInput" 
             class="search-input" 
-            placeholder="Поиск: группа, преподаватель или аудитория (Enter для перехода)..." 
+            placeholder="Поиск: группа, преподаватель или аудитория..." 
             autocomplete="off"
           />
           <div id="autocompleteList" class="autocomplete-list"></div>
@@ -677,7 +876,6 @@
     const MEMORY_CACHE = {};
     const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
-    // Очистка старых битых кэшей поиска при старте
     try {
       Object.keys(localStorage).forEach(k => {
         if (k.startsWith('cache_search_')) localStorage.removeItem(k);
@@ -1036,7 +1234,7 @@
       }
     }
 
-    // ПОИСК: ПАРСИНГ МОДЕЛИ + ССЫЛОК + ПОДДЕРЖКА ENTER
+    // ПОИСК
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
@@ -1059,7 +1257,6 @@
         const htmlText = await res.text();
         const items = [];
 
-        // 1. Проверяем объект Model из скриптов страницы (прямой редирект СКФУ)
         const modelMatch = htmlText.match(/"Model"\s*:\s*(\{[^}]+\})/);
         if (modelMatch && modelMatch[1]) {
           try {
@@ -1081,7 +1278,6 @@
           } catch (e) {}
         }
 
-        // 2. Проверяем ссылки в результатах поиска
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlText, 'text/html');
         const links = doc.querySelectorAll('a[href*="/schedule/"]');
@@ -1122,7 +1318,6 @@
           setCache('search_' + queryText.toLowerCase(), items);
         }
 
-        // Если пользователь нажал Enter и найдено ровно 1 совпадение — открываем сразу
         if (isEnter && items.length === 1) {
           selectTarget(items[0].id, items[0].name, items[0].targetType);
           autoList.style.display = 'none';
