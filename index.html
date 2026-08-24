@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.4 -->
+  <!-- x.5 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -512,14 +512,14 @@
     .color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 8px; }
 
     /* ========================================================
-       ОБНОВЛЁННЫЙ МОБИЛЬНЫЙ ДИЗАЙН (4 СТРОКИ: ПАРА, ПРЕДМЕТ, ТИП+АУДИТОРИЯ, ФИО СПРАВА)
+       МОБИЛЬНЫЙ ДИЗАЙН: ВСЁ СЛЕВА, ТОЛЬКО ФИО СПРАВА
        ======================================================== */
     @media (max-width: 650px) {
       body {
         padding: 0 8px 24px 8px;
       }
 
-      /* Закрепленный компактный верхний блок */
+      /* Закрепленный верхний блок */
       header {
         position: sticky;
         top: 0;
@@ -546,6 +546,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 65vw;
+        text-align: left;
       }
 
       .header-actions {
@@ -636,22 +637,27 @@
         margin: 0 6px;
       }
 
-      /* 4-СТРОЧНАЯ КАРТОЧКА ПАРЫ ДЛЯ ТЕЛЕФОНА */
+      /* КАРТОЧКА ПАРЫ: ВСЕ БЛОКИ СТРОГО СЛЕВА */
       .lesson-item {
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
         gap: 4px;
         padding: 9px 10px;
         border-radius: 9px;
         margin-bottom: 6px;
+        text-align: left;
       }
 
-      /* 1 строка: Пара + Время */
+      /* 1 строка: Номер пары + Время (Слева) */
       .pair-time-block {
         display: flex;
         flex-direction: row;
         align-items: center;
+        justify-content: flex-start;
         gap: 6px;
+        width: 100%;
+        text-align: left;
       }
 
       .pair-num {
@@ -668,11 +674,14 @@
         color: var(--text-muted);
       }
 
-      /* 2 строка: Название предмета */
+      /* 2 строка: Название дисциплины (Слева) */
       .lesson-main {
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
         gap: 4px;
+        text-align: left;
       }
 
       .lesson-title {
@@ -681,16 +690,20 @@
         line-height: 1.25;
         color: var(--text);
         word-break: break-word;
+        text-align: left;
+        width: 100%;
       }
 
-      /* 3 строка: Тип занятия + Корпус/Ауд + Подгруппа */
+      /* 3 строка: Тип занятия + Корпус/Ауд + Подгруппа (Слева) */
       .lesson-meta {
         display: flex;
         align-items: center;
+        justify-content: flex-start;
         gap: 5px;
         flex-wrap: wrap;
         font-size: 0.72rem;
         margin-top: 1px;
+        width: 100%;
       }
 
       .badge {
@@ -705,14 +718,14 @@
         border-radius: 4px;
       }
 
-      /* 4 строка: ФИО преподавателя по правому краю */
+      /* 4 строка: ТОЛЬКО ФИО ПРЕПОДАВАТЕЛЯ ПО ПРАВОМУ КРАЮ */
       .teacher-block {
         align-self: flex-end;
         text-align: right;
         width: 100%;
         font-size: 0.78rem;
         color: var(--text-muted);
-        margin-top: 3px;
+        margin-top: 2px;
         padding-top: 2px;
         white-space: normal;
         overflow: visible;
@@ -973,7 +986,6 @@
       return `Перерыв ${minutes} мин`;
     }
 
-    // Сокращение длинных названий типов занятий
     function simplifyLessonType(rawType) {
       if (!rawType) return '';
       const t = rawType.trim().toLowerCase();
