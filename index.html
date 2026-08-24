@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.6 -->
+  <!-- x.7 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -165,7 +165,7 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
-      max-height: 280px;
+      max-height: 360px;
       overflow-y: auto;
       z-index: 50;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -447,7 +447,7 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       max-height: 85vh;
       display: flex;
       flex-direction: column;
@@ -477,14 +477,27 @@
       gap: 6px;
     }
 
+    /* Адаптивная сетка групп в каталоге */
+    .groups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
     .catalog-item {
-      padding: 12px 14px;
+      padding: 10px 12px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
       border-radius: 8px;
       cursor: pointer;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       transition: all 0.2s;
+      text-align: center;
+      word-break: break-word;
+    }
+    .catalog-item.full-width {
+      text-align: left;
     }
     .catalog-item:hover {
       background: rgba(56, 189, 248, 0.12);
@@ -778,6 +791,11 @@
         line-height: 1.25;
       }
 
+      .groups-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 5px;
+      }
+
       .modal-content {
         max-height: 90vh;
         border-radius: 12px;
@@ -795,7 +813,6 @@
         <div class="header-title-wrap">
           <h1 id="groupTitle">ИНС-б-о-26-2</h1>
           
-          <!-- Кнопка выбора подгруппы (только для групп) -->
           <div id="subgroupToggle" class="subgroup-toggle" style="display: none;">
             <button class="sg-btn active" data-sg="all" onclick="setSubgroup('all')">Все</button>
             <button class="sg-btn" data-sg="1" onclick="setSubgroup('1')">1 п/г</button>
@@ -1177,7 +1194,6 @@
 
         let lessons = day.Lessons || [];
 
-        // Фильтрация по подгруппе
         if (currentTarget.type === 2 && selectedSubgroup !== 'all') {
           lessons = lessons.filter(l => {
             let sg = '';
@@ -1187,7 +1203,7 @@
                 sg = matchedGrp.Subgroup.trim();
               }
             }
-            if (!sg) return true; // Общая пара для всей группы
+            if (!sg) return true;
             const digits = sg.replace(/\D/g, '');
             if (!digits) return true;
             return digits === selectedSubgroup;
@@ -1533,7 +1549,7 @@
       loadSchedule();
     }
 
-    // Каталог
+    // КАТАЛОГ С СЕТКОЙ ГРУПП
     let catalogStep = 1;
     let selectedInstitute = null;
 
@@ -1555,7 +1571,7 @@
 
       INSTITUTES.forEach(inst => {
         const div = document.createElement('div');
-        div.className = 'catalog-item';
+        div.className = 'catalog-item full-width';
         div.innerHTML = `<strong>${inst.ShortName}</strong> — ${inst.Name}`;
         div.onclick = () => loadSpecialities(inst);
         container.appendChild(div);
@@ -1601,7 +1617,7 @@
       }
       specs.forEach(spec => {
         const div = document.createElement('div');
-        div.className = 'catalog-item';
+        div.className = 'catalog-item full-width';
         div.textContent = spec.Name;
         div.onclick = () => loadGroups(inst.Id, inst.BranchId, spec.Name);
         container.appendChild(div);
@@ -1643,19 +1659,25 @@
         container.innerHTML = '<div class="empty-day">Группы не найдены</div>';
         return;
       }
+
       groupsData.forEach(block => {
         const title = document.createElement('div');
-        title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 12px 0 6px 0; font-size: 0.9rem;';
+        title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 12px 0 6px 0; font-size: 0.9rem; text-align: left;';
         title.textContent = block.Key || 'Группы';
         container.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'groups-grid';
 
         (block.Value || []).forEach(grp => {
           const div = document.createElement('div');
           div.className = 'catalog-item';
           div.textContent = grp.Name;
           div.onclick = () => selectTarget(grp.Id, grp.Name, 2);
-          container.appendChild(div);
+          grid.appendChild(div);
         });
+
+        container.appendChild(grid);
       });
     }
 
