@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.5 -->
+  <!-- x.6 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -57,14 +57,49 @@
       gap: 10px;
     }
 
+    .header-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+    .status-text { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Переключатель подгрупп */
+    .subgroup-toggle {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .sg-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .sg-btn:hover { color: var(--text); }
+    .sg-btn.active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+    }
+
     .header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-
-    h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
-    .status-text { font-size: 0.8rem; color: var(--text-muted); }
 
     .theme-btn {
       background: var(--card-bg);
@@ -519,7 +554,6 @@
         padding: 0 8px 24px 8px;
       }
 
-      /* Закрепленный верхний блок */
       header {
         position: sticky;
         top: 0;
@@ -539,14 +573,29 @@
         gap: 6px;
       }
 
+      .header-title-wrap {
+        gap: 6px;
+        max-width: 70vw;
+      }
+
       h1 {
         font-size: 1.05rem;
         letter-spacing: -0.01em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 65vw;
+        max-width: 44vw;
         text-align: left;
+      }
+
+      .subgroup-toggle {
+        padding: 1px;
+        gap: 1px;
+      }
+
+      .sg-btn {
+        padding: 3px 6px;
+        font-size: 0.7rem;
       }
 
       .header-actions {
@@ -637,7 +686,6 @@
         margin: 0 6px;
       }
 
-      /* КАРТОЧКА ПАРЫ: ВСЕ БЛОКИ СТРОГО СЛЕВА */
       .lesson-item {
         display: flex;
         flex-direction: column;
@@ -649,7 +697,6 @@
         text-align: left;
       }
 
-      /* 1 строка: Номер пары + Время (Слева) */
       .pair-time-block {
         display: flex;
         flex-direction: row;
@@ -674,7 +721,6 @@
         color: var(--text-muted);
       }
 
-      /* 2 строка: Название дисциплины (Слева) */
       .lesson-main {
         display: flex;
         flex-direction: column;
@@ -694,7 +740,6 @@
         width: 100%;
       }
 
-      /* 3 строка: Тип занятия + Корпус/Ауд + Подгруппа (Слева) */
       .lesson-meta {
         display: flex;
         align-items: center;
@@ -718,7 +763,6 @@
         border-radius: 4px;
       }
 
-      /* 4 строка: ТОЛЬКО ФИО ПРЕПОДАВАТЕЛЯ ПО ПРАВОМУ КРАЮ */
       .teacher-block {
         align-self: flex-end;
         text-align: right;
@@ -748,7 +792,17 @@
   <div class="container">
     <header>
       <div class="header-top">
-        <h1 id="groupTitle">ИНС-б-о-26-2</h1>
+        <div class="header-title-wrap">
+          <h1 id="groupTitle">ИНС-б-о-26-2</h1>
+          
+          <!-- Кнопка выбора подгруппы (только для групп) -->
+          <div id="subgroupToggle" class="subgroup-toggle" style="display: none;">
+            <button class="sg-btn active" data-sg="all" onclick="setSubgroup('all')">Все</button>
+            <button class="sg-btn" data-sg="1" onclick="setSubgroup('1')">1 п/г</button>
+            <button class="sg-btn" data-sg="2" onclick="setSubgroup('2')">2 п/г</button>
+          </div>
+        </div>
+
         <div class="header-actions">
           <button class="theme-btn" onclick="openThemeModal()">🎨 Тема</button>
           <div id="statusText" class="status-text">Загрузка...</div>
@@ -935,6 +989,9 @@
       type: 2
     };
 
+    let selectedSubgroup = localStorage.getItem('savedSubgroup') || 'all';
+    let lastLoadedDays = null;
+
     let currentMonday = getMonday(new Date(2026, 8, 7));
     let calendarMonthDate = new Date(currentMonday);
     let activeDaysWithClasses = new Set();
@@ -999,6 +1056,27 @@
       return rawType.trim();
     }
 
+    function setSubgroup(sg) {
+      selectedSubgroup = sg;
+      localStorage.setItem('savedSubgroup', sg);
+      updateSubgroupUI();
+      if (lastLoadedDays) {
+        renderSchedule(lastLoadedDays);
+      }
+    }
+
+    function updateSubgroupUI() {
+      const toggleEl = document.getElementById('subgroupToggle');
+      if (currentTarget.type === 2) {
+        toggleEl.style.display = 'inline-flex';
+        document.querySelectorAll('.sg-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-sg') === selectedSubgroup);
+        });
+      } else {
+        toggleEl.style.display = 'none';
+      }
+    }
+
     function prefetchAdjacentWeeks() {
       [-1, 1].forEach(offset => {
         const d = new Date(currentMonday);
@@ -1024,6 +1102,8 @@
       const container = document.getElementById('scheduleContainer');
       document.getElementById('groupTitle').innerText = currentTarget.name;
 
+      updateSubgroupUI();
+
       const dateStr = currentMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
       document.getElementById('currentWeekText').innerText = `С ${dateStr}`;
       
@@ -1033,6 +1113,7 @@
       const cached = getCache(cacheKey);
       if (cached) {
         statusEl.innerText = 'Из кэша (мгновенно)';
+        lastLoadedDays = cached;
         renderSchedule(cached);
         prefetchAdjacentWeeks();
         return;
@@ -1055,6 +1136,7 @@
         const data = await response.json();
         setCache(cacheKey, data);
         statusEl.innerText = 'Актуально';
+        lastLoadedDays = data;
         renderSchedule(data);
         prefetchAdjacentWeeks();
       } catch (err) {
@@ -1084,10 +1166,6 @@
           const [y, m, d] = datePart.split('-');
           const localDate = new Date(y, m - 1, d);
           dateStr = localDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-          
-          if (day.Lessons && day.Lessons.length > 0) {
-            activeDaysWithClasses.add(`${localDate.getFullYear()}-${localDate.getMonth()}-${localDate.getDate()}`);
-          }
         }
 
         card.innerHTML = `
@@ -1097,7 +1175,32 @@
           </div>
         `;
 
-        const lessons = day.Lessons || [];
+        let lessons = day.Lessons || [];
+
+        // Фильтрация по подгруппе
+        if (currentTarget.type === 2 && selectedSubgroup !== 'all') {
+          lessons = lessons.filter(l => {
+            let sg = '';
+            if (l.Groups && l.Groups.length > 0) {
+              const matchedGrp = l.Groups.find(g => g.Id === currentTarget.id) || l.Groups[0];
+              if (matchedGrp && matchedGrp.Subgroup) {
+                sg = matchedGrp.Subgroup.trim();
+              }
+            }
+            if (!sg) return true; // Общая пара для всей группы
+            const digits = sg.replace(/\D/g, '');
+            if (!digits) return true;
+            return digits === selectedSubgroup;
+          });
+        }
+
+        if (day.Date && lessons.length > 0) {
+          const datePart = day.Date.split('T')[0];
+          const [y, m, d] = datePart.split('-');
+          const localDate = new Date(y, m - 1, d);
+          activeDaysWithClasses.add(`${localDate.getFullYear()}-${localDate.getMonth()}-${localDate.getDate()}`);
+        }
+
         if (!lessons.length) {
           card.innerHTML += '<div class="empty-day">Пар нет</div>';
         } else {
