@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <!-- версия x.1 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -149,7 +150,7 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.06); color: var(--accent); }
     .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Навигация по неделям + календарь */
+    /* Навигация по неделям + кастомный календарь */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -193,7 +194,6 @@
     }
     .date-btn:hover { border-color: var(--accent); }
 
-    /* Выпадающий кастомный календарь */
     .custom-calendar-popup {
       position: absolute;
       top: calc(100% + 8px);
@@ -552,7 +552,7 @@
       
       <button class="date-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
         <span>📅</span>
-        <span id="currentWeekText">7 сентября 2026</span>
+        <span id="currentWeekText">7 сентября 2026 г.</span>
       </button>
 
       <button class="nav-btn" onclick="changeWeek(1)">Вперед →</button>
@@ -1028,7 +1028,7 @@
       }
     }
 
-    // ПОИСК С ОБРАБОТКОЙ 302 РЕДИРЕКТА
+    // ПОИСК С ПАРСИНГОМ СЕРВЕРНОЙ МОДЕЛИ И РЕЗУЛЬТАТОВ ПОИСКА
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
@@ -1037,47 +1037,36 @@
     async function fetchSearchQuery(queryText, signal) {
       const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(queryText)}`;
       const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { signal });
-      const finalUrl = decodeURIComponent(res.url || '');
       const htmlText = await res.text();
-      
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, 'text/html');
       const items = [];
 
-      // 1. Проверяем, перенаправил ли сервер 302 редиректом напрямую на сущность
-      const urlPattern = /\/schedule\/(teacher|person|group|auditorium|room)\/(\d+)/i;
-      const match = finalUrl.match(urlPattern) || htmlText.match(urlPattern);
+      // 1. Извлечение серверного объекта Model при точном совпадении (Редирект на страницу сущности)
+      const modelMatch = htmlText.match(/"Model"\s*:\s*(\{[^}]+\})/);
+      if (modelMatch && modelMatch[1]) {
+        try {
+          const modelData = JSON.parse(modelMatch[1]);
+          if (modelData.Id && modelData.Name) {
+            let typeName = 'Группа';
+            let targetType = modelData.Type || 2;
+            if (targetType === 1) typeName = 'Преподаватель';
+            else if (targetType === 2) typeName = 'Группа';
+            else if (targetType === 3) typeName = 'Аудитория';
 
-      if (match) {
-        const typeStr = match[1].toLowerCase();
-        const id = parseInt(match[2], 10);
-        let targetType = 2;
-        let typeName = 'Группа';
-        if (typeStr === 'teacher' || typeStr === 'person') {
-          targetType = 1;
-          typeName = 'Преподаватель';
-        } else if (typeStr === 'auditorium' || typeStr === 'room') {
-          targetType = 3;
-          typeName = 'Аудитория';
-        }
-
-        // Извлекаем ФИО/название из тега <title> или заголовка
-        let name = doc.title ? doc.title.replace(/-?\s*eCampus.*/i, '').trim() : '';
-        if (!name || name === 'Результаты поиска') {
-          const headerEl = doc.querySelector('h2, h3, h1, .breadcrumb li.active');
-          if (headerEl) {
-            name = headerEl.textContent.replace(/Расписание занятий( для преподавателя| группы| в аудитории)?/i, '').trim();
+            items.push({
+              id: modelData.Id,
+              name: modelData.Name.trim(),
+              targetType: targetType,
+              typeName: typeName
+            });
           }
-        }
-        if (!name) name = queryText;
-
-        if (id) {
-          items.push({ id, name, targetType, typeName });
-        }
+        } catch (e) {}
       }
 
-      // 2. Если это список ссылок
+      // 2. Извлечение ссылок из результатов поиска (Множественные совпадения)
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, 'text/html');
       const links = doc.querySelectorAll('a[href*="/schedule/"]');
+      
       links.forEach(a => {
         const href = a.getAttribute('href') || '';
         const name = a.textContent.replace(/\s+/g, ' ').trim();
@@ -1372,7 +1361,7 @@
     }
 
     function syncThemePickers() {
-      const getHex = (v) => v.startsWith('#') ? v : '#38bdf8';
+      const getHex = (v) => v && v.startsWith('#') ? v : '#38bdf8';
       if (document.getElementById('picker-bg')) {
         document.getElementById('picker-bg').value = getHex(userTheme['--bg'] || '#0b0f19');
         document.getElementById('picker-card').value = getHex(userTheme['--card-bg'] || '#151d30');
