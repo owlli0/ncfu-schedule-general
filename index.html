@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.3 дизайн -->
+  <!-- x.4 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -512,7 +512,7 @@
     .color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 8px; }
 
     /* ========================================================
-       АДАПТИВНЫЙ И ЭРГОНОМИЧНЫЙ ДИЗАЙН ДЛЯ ТЕЛЕФОНОВ (≤ 650px)
+       ОБНОВЛЁННЫЙ МОБИЛЬНЫЙ ДИЗАЙН (4 СТРОКИ: ПАРА, ПРЕДМЕТ, ТИП+АУДИТОРИЯ, ФИО СПРАВА)
        ======================================================== */
     @media (max-width: 650px) {
       body {
@@ -559,7 +559,7 @@
       }
 
       .status-text {
-        display: none; /* скрываем второстепенный текст на смартфонах */
+        display: none;
       }
 
       .search-row {
@@ -580,7 +580,6 @@
         border-radius: 8px;
       }
 
-      /* Компактная полоса навигации недели */
       .week-nav-bar {
         padding: 5px 6px;
         margin-bottom: 10px;
@@ -609,15 +608,14 @@
         padding: 10px;
       }
 
-      /* Компактные карточки дней */
       .day-card {
-        padding: 8px 10px;
-        margin-bottom: 10px;
-        border-radius: 10px;
+        padding: 10px 10px;
+        margin-bottom: 12px;
+        border-radius: 12px;
       }
 
       .day-header {
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         padding-bottom: 4px;
       }
 
@@ -626,33 +624,31 @@
       }
 
       .day-date {
-        font-size: 0.75rem;
+        font-size: 0.78rem;
       }
 
       .break-indicator {
-        margin: 4px 0;
-        font-size: 0.7rem;
+        margin: 6px 0;
+        font-size: 0.72rem;
       }
 
       .break-indicator::before, .break-indicator::after {
         margin: 0 6px;
       }
 
-      /* Двухстрочная эргономичная карточка пары */
+      /* 4-СТРОЧНАЯ КАРТОЧКА ПАРЫ ДЛЯ ТЕЛЕФОНА */
       .lesson-item {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-areas:
-          "time teacher"
-          "main main";
-        padding: 6px 8px;
-        gap: 4px 6px;
-        border-radius: 8px;
-        margin-bottom: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 9px 10px;
+        border-radius: 9px;
+        margin-bottom: 6px;
       }
 
+      /* 1 строка: Пара + Время */
       .pair-time-block {
-        grid-area: time;
+        display: flex;
         flex-direction: row;
         align-items: center;
         gap: 6px;
@@ -662,52 +658,67 @@
         font-size: 0.76rem;
         font-weight: 700;
         background: rgba(255, 255, 255, 0.08);
-        padding: 1px 4px;
+        padding: 1px 5px;
         border-radius: 4px;
       }
 
       .pair-hours {
-        font-size: 0.72rem;
-        margin-top: 0;
-        opacity: 0.85;
-      }
-
-      .teacher-block {
-        grid-area: teacher;
         font-size: 0.75rem;
-        text-align: right;
-        max-width: 50vw;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        margin-top: 0;
+        color: var(--text-muted);
       }
 
+      /* 2 строка: Название предмета */
       .lesson-main {
-        grid-area: main;
-        gap: 3px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
 
       .lesson-title {
-        font-size: 0.85rem;
-        line-height: 1.2;
+        font-size: 0.92rem;
         font-weight: 600;
+        line-height: 1.25;
+        color: var(--text);
+        word-break: break-word;
       }
 
+      /* 3 строка: Тип занятия + Корпус/Ауд + Подгруппа */
       .lesson-meta {
-        gap: 4px;
-        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap;
+        font-size: 0.72rem;
+        margin-top: 1px;
       }
 
       .badge {
-        font-size: 0.62rem;
-        padding: 1px 4px;
-        border-radius: 3px;
+        font-size: 0.68rem;
+        padding: 2px 6px;
+        border-radius: 4px;
       }
 
       .subgroup-tag, .room-tag {
-        font-size: 0.68rem;
-        padding: 1px 4px;
-        border-radius: 3px;
+        font-size: 0.72rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      /* 4 строка: ФИО преподавателя по правому краю */
+      .teacher-block {
+        align-self: flex-end;
+        text-align: right;
+        width: 100%;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 3px;
+        padding-top: 2px;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        max-width: 100%;
+        line-height: 1.25;
       }
 
       .modal-content {
@@ -737,7 +748,7 @@
             type="text" 
             id="searchInput" 
             class="search-input" 
-            placeholder="Поиск: группа, преподаватель или аудитория..." 
+            placeholder="Поиск: группа, преподаватель или аудитория (Enter для перехода)..." 
             autocomplete="off"
           />
           <div id="autocompleteList" class="autocomplete-list"></div>
@@ -962,6 +973,20 @@
       return `Перерыв ${minutes} мин`;
     }
 
+    // Сокращение длинных названий типов занятий
+    function simplifyLessonType(rawType) {
+      if (!rawType) return '';
+      const t = rawType.trim().toLowerCase();
+      if (t.includes('практ')) return 'Практика';
+      if (t.includes('лаб')) return 'Лаб. работа';
+      if (t.includes('лекц')) return 'Лекция';
+      if (t.includes('семин')) return 'Семинар';
+      if (t.includes('зачет') || t.includes('зачёт')) return 'Зачёт';
+      if (t.includes('экзамен')) return 'Экзамен';
+      if (t.includes('конс')) return 'Консультация';
+      return rawType.trim();
+    }
+
     function prefetchAdjacentWeeks() {
       [-1, 1].forEach(offset => {
         const d = new Date(currentMonday);
@@ -1091,6 +1116,7 @@
             const item = document.createElement('div');
             const rawType = (l.LessonType || '').trim();
             const typeLower = rawType.toLowerCase();
+            const displayType = simplifyLessonType(rawType);
 
             let typeClass = 'type-other';
             let badgeClass = 'badge-def';
@@ -1126,7 +1152,7 @@
               <div class="lesson-main">
                 <div class="lesson-title">${l.Discipline || 'Предмет'}</div>
                 <div class="lesson-meta">
-                  ${rawType ? `<span class="badge ${badgeClass}">${rawType}</span>` : ''}
+                  ${displayType ? `<span class="badge ${badgeClass}">${displayType}</span>` : ''}
                   ${subgroup ? `<span class="subgroup-tag">Подгруппа ${subgroup}</span>` : ''}
                   ${roomFormatted ? `<span class="room-tag">📍 ${roomFormatted}</span>` : ''}
                   ${extraGroupInfo ? `<span class="subgroup-tag">👥 ${extraGroupInfo}</span>` : ''}
