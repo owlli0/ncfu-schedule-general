@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- версия x.1 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -150,7 +149,7 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.06); color: var(--accent); }
     .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Навигация по неделям + кастомный календарь */
+    /* Навигация по неделям + календарь */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -538,7 +537,7 @@
             type="text" 
             id="searchInput" 
             class="search-input" 
-            placeholder="Поиск: группа, преподаватель или аудитория..." 
+            placeholder="Поиск: группа, преподаватель или аудитория (Enter для перехода)..." 
             autocomplete="off"
           />
           <div id="autocompleteList" class="autocomplete-list"></div>
@@ -677,6 +676,13 @@
     const MEMORY_CACHE = {};
     const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
+    // Очистка старых битых кэшей поиска при старте
+    try {
+      Object.keys(localStorage).forEach(k => {
+        if (k.startsWith('cache_search_')) localStorage.removeItem(k);
+      });
+    } catch (e) {}
+
     function getCache(key) {
       if (MEMORY_CACHE[key]) return MEMORY_CACHE[key];
       try {
@@ -693,6 +699,7 @@
     }
 
     function setCache(key, data) {
+      if (!data || (Array.isArray(data) && data.length === 0)) return;
       MEMORY_CACHE[key] = data;
       try {
         localStorage.setItem('cache_' + key, JSON.stringify({ ts: Date.now(), data }));
@@ -1028,78 +1035,106 @@
       }
     }
 
-    // ПОИСК С ПАРСИНГОМ СЕРВЕРНОЙ МОДЕЛИ И РЕЗУЛЬТАТОВ ПОИСКА
+    // ПОИСК: ПАРСИНГ МОДЕЛИ + ССЫЛОК + ПОДДЕРЖКА ENTER
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
 
-    async function fetchSearchQuery(queryText, signal) {
-      const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(queryText)}`;
-      const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { signal });
-      const htmlText = await res.text();
-      const items = [];
-
-      // 1. Извлечение серверного объекта Model при точном совпадении (Редирект на страницу сущности)
-      const modelMatch = htmlText.match(/"Model"\s*:\s*(\{[^}]+\})/);
-      if (modelMatch && modelMatch[1]) {
-        try {
-          const modelData = JSON.parse(modelMatch[1]);
-          if (modelData.Id && modelData.Name) {
-            let typeName = 'Группа';
-            let targetType = modelData.Type || 2;
-            if (targetType === 1) typeName = 'Преподаватель';
-            else if (targetType === 2) typeName = 'Группа';
-            else if (targetType === 3) typeName = 'Аудитория';
-
-            items.push({
-              id: modelData.Id,
-              name: modelData.Name.trim(),
-              targetType: targetType,
-              typeName: typeName
-            });
-          }
-        } catch (e) {}
+    async function executeSearch(queryText, isEnter = false) {
+      if (!queryText || queryText.length < 2) {
+        autoList.style.display = 'none';
+        return;
       }
 
-      // 2. Извлечение ссылок из результатов поиска (Множественные совпадения)
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, 'text/html');
-      const links = doc.querySelectorAll('a[href*="/schedule/"]');
-      
-      links.forEach(a => {
-        const href = a.getAttribute('href') || '';
-        const name = a.textContent.replace(/\s+/g, ' ').trim();
-        if (!name || name === 'Расписание' || name.toLowerCase().includes('войти') || name.includes('<-') || name.includes('->')) return;
+      if (currentSearchController) currentSearchController.abort();
+      currentSearchController = new AbortController();
 
-        const cleanHref = href.split('?')[0];
-        const parts = cleanHref.split('/').filter(Boolean);
-        const typeIndex = parts.indexOf('schedule');
-        if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
+      try {
+        const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(queryText)}`;
+        const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { 
+          signal: currentSearchController.signal 
+        });
+        const htmlText = await res.text();
+        const items = [];
 
-        const typeStr = parts[typeIndex + 1].toLowerCase();
-        const id = parseInt(parts[typeIndex + 2], 10);
-        if (!id) return;
+        // 1. Проверяем объект Model из скриптов страницы (прямой редирект СКФУ)
+        const modelMatch = htmlText.match(/"Model"\s*:\s*(\{[^}]+\})/);
+        if (modelMatch && modelMatch[1]) {
+          try {
+            const modelData = JSON.parse(modelMatch[1]);
+            if (modelData.Id && modelData.Name) {
+              let typeName = 'Группа';
+              let targetType = modelData.Type || 2;
+              if (targetType === 1) typeName = 'Преподаватель';
+              else if (targetType === 2) typeName = 'Группа';
+              else if (targetType === 3) typeName = 'Аудитория';
 
-        let targetType = 2;
-        let typeName = 'Группа';
-        if (typeStr.includes('person') || typeStr.includes('teacher')) {
-          targetType = 1;
-          typeName = 'Преподаватель';
-        } else if (typeStr.includes('aud') || typeStr.includes('room')) {
-          targetType = 3;
-          typeName = 'Аудитория';
-        } else if (typeStr.includes('group')) {
-          targetType = 2;
-          typeName = 'Группа';
+              items.push({
+                id: modelData.Id,
+                name: modelData.Name.trim(),
+                targetType: targetType,
+                typeName: typeName
+              });
+            }
+          } catch (e) {}
         }
 
-        if (!items.some(it => it.id === id && it.targetType === targetType)) {
-          items.push({ id, name, targetType, typeName });
-        }
-      });
+        // 2. Проверяем ссылки в результатах поиска
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, 'text/html');
+        const links = doc.querySelectorAll('a[href*="/schedule/"]');
+        
+        links.forEach(a => {
+          const href = a.getAttribute('href') || '';
+          const name = a.textContent.replace(/\s+/g, ' ').trim();
+          if (!name || name === 'Расписание' || name.toLowerCase().includes('войти') || name.includes('<-') || name.includes('->')) return;
 
-      return items;
+          const cleanHref = href.split('?')[0];
+          const parts = cleanHref.split('/').filter(Boolean);
+          const typeIndex = parts.indexOf('schedule');
+          if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
+
+          const typeStr = parts[typeIndex + 1].toLowerCase();
+          const id = parseInt(parts[typeIndex + 2], 10);
+          if (!id) return;
+
+          let targetType = 2;
+          let typeName = 'Группа';
+          if (typeStr.includes('person') || typeStr.includes('teacher')) {
+            targetType = 1;
+            typeName = 'Преподаватель';
+          } else if (typeStr.includes('aud') || typeStr.includes('room')) {
+            targetType = 3;
+            typeName = 'Аудитория';
+          } else if (typeStr.includes('group')) {
+            targetType = 2;
+            typeName = 'Группа';
+          }
+
+          if (!items.some(it => it.id === id && it.targetType === targetType)) {
+            items.push({ id, name, targetType, typeName });
+          }
+        });
+
+        if (items.length > 0) {
+          setCache('search_' + queryText.toLowerCase(), items);
+        }
+
+        // Если пользователь нажал Enter и найдено ровно 1 совпадение — открываем сразу
+        if (isEnter && items.length === 1) {
+          selectTarget(items[0].id, items[0].name, items[0].targetType);
+          autoList.style.display = 'none';
+          searchInput.value = '';
+          return;
+        }
+
+        renderAutocomplete(items);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Ошибка поиска:', err);
+        }
+      }
     }
 
     searchInput.addEventListener('input', (e) => {
@@ -1112,33 +1147,23 @@
         return;
       }
 
-      const cacheKey = 'search_' + query.toLowerCase();
-      const cached = getCache(cacheKey);
-      if (cached) {
+      const cached = getCache('search_' + query.toLowerCase());
+      if (cached && cached.length > 0) {
         renderAutocomplete(cached);
         return;
       }
 
-      searchTimeout = setTimeout(async () => {
-        if (currentSearchController) currentSearchController.abort();
-        currentSearchController = new AbortController();
+      searchTimeout = setTimeout(() => {
+        executeSearch(query, false);
+      }, 250);
+    });
 
-        try {
-          let items = await fetchSearchQuery(query, currentSearchController.signal);
-
-          if (!items.length) {
-            const capitalized = query.charAt(0).toUpperCase() + query.slice(1);
-            items = await fetchSearchQuery(capitalized, currentSearchController.signal);
-          }
-
-          setCache(cacheKey, items);
-          renderAutocomplete(items);
-        } catch (err) {
-          if (err.name !== 'AbortError') {
-            console.error('Ошибка поиска:', err);
-          }
-        }
-      }, 200);
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(searchTimeout);
+        executeSearch(searchInput.value.trim(), true);
+      }
     });
 
     function renderAutocomplete(items) {
