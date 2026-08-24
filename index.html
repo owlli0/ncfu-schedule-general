@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.7 -->
+  <!-- x.8 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -477,7 +477,6 @@
       gap: 6px;
     }
 
-    /* Адаптивная сетка групп в каталоге */
     .groups-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
@@ -1073,6 +1072,27 @@
       return rawType.trim();
     }
 
+    // Умная нормализация названия группы (инсбо262 -> ИНС-б-о-26-2)
+    function normalizeGroupQuery(raw) {
+      if (!raw) return raw;
+      const clean = raw.trim().replace(/[\s\-_]+/g, '');
+      
+      // Шаблон 1: инсбо262 или стрбоз221
+      const m1 = clean.match(/^([а-яёa-z]+?)(б|м|с|а)(о|з|оз)(\d{2})(\d*)$/i);
+      if (m1) {
+        const part5 = m1[5] ? `-${m1[5]}` : '';
+        return `${m1[1].toUpperCase()}-${m1[2].toLowerCase()}-${m1[3].toLowerCase()}-${m1[4]}${part5}`;
+      }
+
+      // Шаблон 2: инс262 -> ИНС 26-2
+      const m2 = clean.match(/^([а-яёa-z]+?)(\d{2})(\d+)$/i);
+      if (m2) {
+        return `${m2[1].toUpperCase()}-${m2[2]}-${m2[3]}`;
+      }
+
+      return raw;
+    }
+
     function setSubgroup(sg) {
       selectedSubgroup = sg;
       localStorage.setItem('savedSubgroup', sg);
@@ -1391,11 +1411,77 @@
       }
     }
 
-    // ПОИСК
+    // ПОИСК С УМНОЙ НОРМАЛИЗАЦИЕЙ СЛИТНЫХ НАЗВАНИЙ
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
+
+    async function queryServerSearch(text, signal) {
+      const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(text)}`;
+      const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { signal });
+      const htmlText = await res.text();
+      const items = [];
+
+      const modelMatch = htmlText.match(/"Model"\s*:\s*(\{[^}]+\})/);
+      if (modelMatch && modelMatch[1]) {
+        try {
+          const modelData = JSON.parse(modelMatch[1]);
+          if (modelData.Id && modelData.Name) {
+            let typeName = 'Группа';
+            let targetType = modelData.Type || 2;
+            if (targetType === 1) typeName = 'Преподаватель';
+            else if (targetType === 2) typeName = 'Группа';
+            else if (targetType === 3) typeName = 'Аудитория';
+
+            items.push({
+              id: modelData.Id,
+              name: modelData.Name.trim(),
+              targetType: targetType,
+              typeName: typeName
+            });
+          }
+        } catch (e) {}
+      }
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, 'text/html');
+      const links = doc.querySelectorAll('a[href*="/schedule/"]');
+      
+      links.forEach(a => {
+        const href = a.getAttribute('href') || '';
+        const name = a.textContent.replace(/\s+/g, ' ').trim();
+        if (!name || name === 'Расписание' || name.toLowerCase().includes('войти') || name.includes('<-') || name.includes('->')) return;
+
+        const cleanHref = href.split('?')[0];
+        const parts = cleanHref.split('/').filter(Boolean);
+        const typeIndex = parts.indexOf('schedule');
+        if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
+
+        const typeStr = parts[typeIndex + 1].toLowerCase();
+        const id = parseInt(parts[typeIndex + 2], 10);
+        if (!id) return;
+
+        let targetType = 2;
+        let typeName = 'Группа';
+        if (typeStr.includes('person') || typeStr.includes('teacher')) {
+          targetType = 1;
+          typeName = 'Преподаватель';
+        } else if (typeStr.includes('aud') || typeStr.includes('room')) {
+          targetType = 3;
+          typeName = 'Аудитория';
+        } else if (typeStr.includes('group')) {
+          targetType = 2;
+          typeName = 'Группа';
+        }
+
+        if (!items.some(it => it.id === id && it.targetType === targetType)) {
+          items.push({ id, name, targetType, typeName });
+        }
+      });
+
+      return items;
+    }
 
     async function executeSearch(queryText, isEnter = false) {
       if (!queryText || queryText.length < 2) {
@@ -1407,69 +1493,15 @@
       currentSearchController = new AbortController();
 
       try {
-        const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(queryText)}`;
-        const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { 
-          signal: currentSearchController.signal 
-        });
-        const htmlText = await res.text();
-        const items = [];
-
-        const modelMatch = htmlText.match(/"Model"\s*:\s*(\{[^}]+\})/);
-        if (modelMatch && modelMatch[1]) {
-          try {
-            const modelData = JSON.parse(modelMatch[1]);
-            if (modelData.Id && modelData.Name) {
-              let typeName = 'Группа';
-              let targetType = modelData.Type || 2;
-              if (targetType === 1) typeName = 'Преподаватель';
-              else if (targetType === 2) typeName = 'Группа';
-              else if (targetType === 3) typeName = 'Аудитория';
-
-              items.push({
-                id: modelData.Id,
-                name: modelData.Name.trim(),
-                targetType: targetType,
-                typeName: typeName
-              });
-            }
-          } catch (e) {}
-        }
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, 'text/html');
-        const links = doc.querySelectorAll('a[href*="/schedule/"]');
+        const normalized = normalizeGroupQuery(queryText);
         
-        links.forEach(a => {
-          const href = a.getAttribute('href') || '';
-          const name = a.textContent.replace(/\s+/g, ' ').trim();
-          if (!name || name === 'Расписание' || name.toLowerCase().includes('войти') || name.includes('<-') || name.includes('->')) return;
+        // 1. Пробуем нормализованный вариант (например, инсбо262 -> ИНС-б-о-26-2)
+        let items = await queryServerSearch(normalized, currentSearchController.signal);
 
-          const cleanHref = href.split('?')[0];
-          const parts = cleanHref.split('/').filter(Boolean);
-          const typeIndex = parts.indexOf('schedule');
-          if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
-
-          const typeStr = parts[typeIndex + 1].toLowerCase();
-          const id = parseInt(parts[typeIndex + 2], 10);
-          if (!id) return;
-
-          let targetType = 2;
-          let typeName = 'Группа';
-          if (typeStr.includes('person') || typeStr.includes('teacher')) {
-            targetType = 1;
-            typeName = 'Преподаватель';
-          } else if (typeStr.includes('aud') || typeStr.includes('room')) {
-            targetType = 3;
-            typeName = 'Аудитория';
-          } else if (typeStr.includes('group')) {
-            targetType = 2;
-            typeName = 'Группа';
-          }
-
-          if (!items.some(it => it.id === id && it.targetType === targetType)) {
-            items.push({ id, name, targetType, typeName });
-          }
-        });
+        // 2. Если ничего не найдено и нормализация изменила текст, пробуем исходный
+        if (!items.length && normalized !== queryText) {
+          items = await queryServerSearch(queryText, currentSearchController.signal);
+        }
 
         if (items.length > 0) {
           setCache('search_' + queryText.toLowerCase(), items);
@@ -1549,7 +1581,7 @@
       loadSchedule();
     }
 
-    // КАТАЛОГ С СЕТКОЙ ГРУПП
+    // Каталог
     let catalogStep = 1;
     let selectedInstitute = null;
 
