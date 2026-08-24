@@ -36,6 +36,7 @@
       padding: 16px 12px;
       display: flex;
       justify-content: center;
+      transition: background-color 0.2s, color 0.2s;
     }
 
     .container { width: 100%; max-width: 880px; }
@@ -55,8 +56,29 @@
       gap: 10px;
     }
 
-    h1 { font-size: 1.4rem; font-weight: 700; color: #fff; }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
     .status-text { font-size: 0.8rem; color: var(--text-muted); }
+
+    .theme-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .theme-btn:hover { border-color: var(--accent); }
 
     .search-row {
       display: flex;
@@ -73,7 +95,7 @@
       width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      color: #fff;
+      color: var(--text);
       padding: 12px 14px;
       border-radius: 12px;
       font-size: 0.95rem;
@@ -95,7 +117,7 @@
       transition: all 0.2s;
     }
     .catalog-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       border-color: var(--accent);
     }
 
@@ -104,7 +126,7 @@
       top: calc(100% + 6px);
       left: 0;
       right: 0;
-      background: #1e293b;
+      background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
       max-height: 280px;
@@ -118,16 +140,16 @@
       padding: 12px 14px;
       cursor: pointer;
       font-size: 0.92rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .autocomplete-item:last-child { border-bottom: none; }
-    .autocomplete-item:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
+    .autocomplete-item:hover { background: rgba(255,255,255,0.06); color: var(--accent); }
     .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Навигация по неделям + календарь */
+    /* Навигация по неделям + кастомный календарь */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -137,7 +159,8 @@
       border-radius: 12px;
       border: 1px solid var(--border);
       margin-bottom: 18px;
-      gap: 6px;
+      gap: 8px;
+      position: relative;
     }
 
     .nav-btn {
@@ -153,28 +176,105 @@
       white-space: nowrap;
     }
     .nav-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
-    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    .date-picker-wrap {
+    .date-btn {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 4px 10px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px 14px;
       border-radius: 8px;
       border: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .date-btn:hover { border-color: var(--accent); }
+
+    /* Выпадающий кастомный календарь */
+    .custom-calendar-popup {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      width: 320px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+      z-index: 60;
+      display: none;
     }
 
-    .date-picker-input {
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .cal-title { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .cal-nav-btn {
       background: transparent;
-      border: none;
-      color: #fff;
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 6px;
       cursor: pointer;
-      outline: none;
-      color-scheme: dark;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+
+    .cal-weekday {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding-bottom: 6px;
+    }
+
+    .cal-day-cell {
+      padding: 8px 0;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      position: relative;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    .cal-day-cell:hover:not(.empty) { background: rgba(255,255,255,0.08); }
+    .cal-day-cell.empty { cursor: default; opacity: 0.3; }
+    
+    .cal-day-cell.in-week {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .cal-day-cell.selected {
+      background: var(--accent) !important;
+      color: #000 !important;
+      font-weight: 700;
+    }
+
+    .cal-day-cell.has-classes::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: var(--accent);
+    }
+    .cal-day-cell.selected.has-classes::after {
+      background-color: #000;
     }
 
     /* Карточки дней */
@@ -194,7 +294,7 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
-    .day-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .day-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
     .day-date { font-size: 0.85rem; color: var(--text-muted); }
 
     .break-indicator {
@@ -210,7 +310,7 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: rgba(255, 255, 255, 0.12);
+      background: var(--border);
       margin: 0 10px;
     }
 
@@ -239,7 +339,7 @@
     }
 
     .pair-time-block { display: flex; flex-direction: column; }
-    .pair-num { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .pair-num { font-size: 0.85rem; font-weight: 700; color: var(--text); }
     .pair-hours {
       font-size: 0.75rem;
       color: var(--text-muted);
@@ -248,7 +348,7 @@
     }
 
     .lesson-main { display: flex; flex-direction: column; gap: 4px; }
-    .lesson-title { font-size: 0.95rem; font-weight: 600; color: #fff; line-height: 1.3; }
+    .lesson-title { font-size: 0.95rem; font-weight: 600; color: var(--text); line-height: 1.3; }
     .lesson-meta { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; flex-wrap: wrap; }
 
     .badge {
@@ -260,10 +360,10 @@
     }
     .badge-lec { background: var(--lecture-badge); color: #000; }
     .badge-prac { background: var(--practice-badge); color: #000; }
-    .badge-def { background: rgba(255,255,255,0.2); color: #fff; }
+    .badge-def { background: rgba(255,255,255,0.2); color: var(--text); }
 
     .subgroup-tag {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       padding: 2px 6px;
       border-radius: 4px;
       font-size: 0.75rem;
@@ -272,11 +372,11 @@
 
     .room-tag {
       font-weight: 600;
-      color: #38bdf8;
+      color: var(--accent);
       background: rgba(56, 189, 248, 0.12);
       padding: 2px 6px;
       border-radius: 4px;
-      border: 1px solid rgba(56, 189, 248, 0.25);
+      border: 1px solid var(--border);
     }
 
     .teacher-block {
@@ -294,7 +394,7 @@
       padding: 10px 0;
     }
 
-    /* Модалка каталога */
+    /* Модальные окна */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -308,15 +408,16 @@
     }
 
     .modal-content {
-      background: #151d30;
+      background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 16px;
       width: 100%;
-      max-width: 650px;
+      max-width: 600px;
       max-height: 85vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      color: var(--text);
     }
 
     .modal-header {
@@ -326,7 +427,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    .modal-header h2 { font-size: 1.15rem; color: #fff; }
+    .modal-header h2 { font-size: 1.15rem; color: var(--text); }
     .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
 
     .modal-body {
@@ -353,7 +454,6 @@
     .catalog-item:hover {
       background: rgba(56, 189, 248, 0.12);
       border-color: var(--accent);
-      color: #fff;
     }
 
     .catalog-breadcrumbs {
@@ -364,11 +464,60 @@
       display: inline-block;
     }
 
+    /* Настройки тем */
+    .theme-presets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .preset-btn {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    .preset-btn:hover { border-color: var(--accent); }
+
+    .custom-colors-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .color-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .color-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .color-picker {
+      -webkit-appearance: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 8px; }
+
     @media (max-width: 650px) {
       .lesson-item { grid-template-columns: 1fr; gap: 8px; }
       .teacher-block { text-align: left; }
       .search-row { flex-direction: column; align-items: stretch; }
       .week-nav-bar { flex-wrap: wrap; justify-content: center; }
+      .custom-calendar-popup { width: 95%; left: 2.5%; transform: none; }
     }
   </style>
 </head>
@@ -377,7 +526,10 @@
     <header>
       <div class="header-top">
         <h1 id="groupTitle">ИНС-б-о-26-2</h1>
-        <div id="statusText" class="status-text">Загрузка...</div>
+        <div class="header-actions">
+          <button class="theme-btn" onclick="openThemeModal()">🎨 Тема</button>
+          <div id="statusText" class="status-text">Загрузка...</div>
+        </div>
       </div>
 
       <div class="search-row">
@@ -397,16 +549,29 @@
 
     <div class="week-nav-bar">
       <button class="nav-btn" onclick="changeWeek(-1)">← Назад</button>
-      <div class="date-picker-wrap">
+      
+      <button class="date-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
         <span>📅</span>
-        <input type="date" id="weekDatePicker" class="date-picker-input" onchange="onDatePicked(this.value)">
-      </div>
+        <span id="currentWeekText">7 сентября 2026</span>
+      </button>
+
       <button class="nav-btn" onclick="changeWeek(1)">Вперед →</button>
+
+      <!-- Интерактивный кастомный календарь -->
+      <div id="calendarPopup" class="custom-calendar-popup">
+        <div class="calendar-header">
+          <button class="cal-nav-btn" onclick="changeCalMonth(-1)">←</button>
+          <span class="cal-title" id="calMonthTitle">Сентябрь 2026</span>
+          <button class="cal-nav-btn" onclick="changeCalMonth(1)">→</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
     </div>
 
     <div id="scheduleContainer"></div>
   </div>
 
+  <!-- Модалка каталога -->
   <div id="catalogModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -416,6 +581,62 @@
       <div class="modal-body">
         <div id="breadcrumbs" class="catalog-breadcrumbs" style="display: none;" onclick="goBackCatalog()">← Назад</div>
         <div id="catalogContainer" class="catalog-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка настройки темы -->
+  <div id="themeModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Настройка темы и цветов</h2>
+        <button class="close-modal" onclick="closeThemeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="theme-presets">
+          <button class="preset-btn" onclick="applyPreset('dark')">🌙 Тёмная</button>
+          <button class="preset-btn" onclick="applyPreset('light')">☀️ Светлая</button>
+          <button class="preset-btn" onclick="applyPreset('oled')">🖤 OLED</button>
+        </div>
+
+        <div class="custom-colors-grid">
+          <div class="color-row">
+            <span>Фон страницы</span>
+            <div class="color-input-wrap">
+              <input type="color" id="picker-bg" class="color-picker" onchange="onCustomColorChange('--bg', this.value)">
+            </div>
+          </div>
+          <div class="color-row">
+            <span>Фон карточек</span>
+            <div class="color-input-wrap">
+              <input type="color" id="picker-card" class="color-picker" onchange="onCustomColorChange('--card-bg', this.value)">
+            </div>
+          </div>
+          <div class="color-row">
+            <span>Основной акцент</span>
+            <div class="color-input-wrap">
+              <input type="color" id="picker-accent" class="color-picker" onchange="onCustomColorChange('--accent', this.value)">
+            </div>
+          </div>
+          <div class="color-row">
+            <span>Цвет лекций</span>
+            <div class="color-input-wrap">
+              <input type="color" id="picker-lecture" class="color-picker" onchange="onCustomLectureChange(this.value)">
+            </div>
+          </div>
+          <div class="color-row">
+            <span>Цвет практик</span>
+            <div class="color-input-wrap">
+              <input type="color" id="picker-practice" class="color-picker" onchange="onCustomPracticeChange(this.value)">
+            </div>
+          </div>
+          <div class="color-row">
+            <span>Цвет текста</span>
+            <div class="color-input-wrap">
+              <input type="color" id="picker-text" class="color-picker" onchange="onCustomColorChange('--text', this.value)">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -488,6 +709,8 @@
     };
 
     let currentMonday = getMonday(new Date(2026, 8, 7));
+    let calendarMonthDate = new Date(currentMonday);
+    let activeDaysWithClasses = new Set();
 
     function getMonday(d) {
       d = new Date(d);
@@ -496,20 +719,6 @@
       const mon = new Date(d.setDate(diff));
       mon.setHours(0, 0, 0, 0);
       return mon;
-    }
-
-    function formatToYMD(d) {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    function onDatePicked(val) {
-      if (!val) return;
-      const [y, m, d] = val.split('-').map(Number);
-      currentMonday = getMonday(new Date(y, m - 1, d));
-      loadSchedule();
     }
 
     function extractTime(isoStr, pairNum, isEnd = false) {
@@ -575,8 +784,8 @@
       const container = document.getElementById('scheduleContainer');
       document.getElementById('groupTitle').innerText = currentTarget.name;
 
-      // Синхронизируем значение календаря с текущим понедельником
-      document.getElementById('weekDatePicker').value = formatToYMD(currentMonday);
+      const dateStr = currentMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('currentWeekText').innerText = `С ${dateStr}`;
       
       const isoDate = currentMonday.toISOString();
       const cacheKey = `sched_${currentTarget.type}_${currentTarget.id}_${isoDate}`;
@@ -617,9 +826,11 @@
     function renderSchedule(days) {
       const container = document.getElementById('scheduleContainer');
       container.innerHTML = '';
+      activeDaysWithClasses.clear();
 
       if (!days || !days.length) {
         container.innerHTML = '<div class="day-card empty-day">Пар на этой неделе нет</div>';
+        renderCalendarGrid();
         return;
       }
 
@@ -633,6 +844,10 @@
           const [y, m, d] = datePart.split('-');
           const localDate = new Date(y, m - 1, d);
           dateStr = localDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+          
+          if (day.Lessons && day.Lessons.length > 0) {
+            activeDaysWithClasses.add(`${localDate.getFullYear()}-${localDate.getMonth()}-${localDate.getDate()}`);
+          }
         }
 
         card.innerHTML = `
@@ -724,18 +939,150 @@
 
         container.appendChild(card);
       });
+
+      renderCalendarGrid();
     }
 
     function changeWeek(offset) {
       currentMonday.setDate(currentMonday.getDate() + (offset * 7));
+      calendarMonthDate = new Date(currentMonday);
       loadSchedule();
     }
 
-    // Живой поиск без двойного экранирования
+    // ЛОГИКА КАСТОМНОГО КАЛЕНДАРЯ
+    const calendarPopup = document.getElementById('calendarPopup');
+    const calendarGrid = document.getElementById('calendarGrid');
+
+    function toggleCalendar() {
+      if (calendarPopup.style.display === 'block') {
+        calendarPopup.style.display = 'none';
+      } else {
+        calendarMonthDate = new Date(currentMonday);
+        renderCalendarGrid();
+        calendarPopup.style.display = 'block';
+      }
+    }
+
+    function changeCalMonth(offset) {
+      calendarMonthDate.setMonth(calendarMonthDate.getMonth() + offset);
+      renderCalendarGrid();
+    }
+
+    function renderCalendarGrid() {
+      const year = calendarMonthDate.getFullYear();
+      const month = calendarMonthDate.getMonth();
+      
+      const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+      document.getElementById('calMonthTitle').innerText = `${monthNames[month]} ${year}`;
+
+      calendarGrid.innerHTML = '';
+
+      const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+      weekdays.forEach(w => {
+        const el = document.createElement('div');
+        el.className = 'cal-weekday';
+        el.textContent = w;
+        calendarGrid.appendChild(el);
+      });
+
+      const firstDayOfMonth = new Date(year, month, 1);
+      let startDay = firstDayOfMonth.getDay();
+      startDay = startDay === 0 ? 6 : startDay - 1; // 0 = Пн
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < startDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'cal-day-cell empty';
+        calendarGrid.appendChild(emptyCell);
+      }
+
+      const monTime = currentMonday.getTime();
+      const sunTime = monTime + 6 * 86400000;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell';
+        cell.textContent = day;
+
+        const cellDate = new Date(year, month, day);
+        cellDate.setHours(0,0,0,0);
+        const cellTime = cellDate.getTime();
+
+        if (cellTime >= monTime && cellTime <= sunTime) {
+          cell.classList.add('in-week');
+          if (cellTime === monTime) {
+            cell.classList.add('selected');
+          }
+        }
+
+        const dateKey = `${year}-${month}-${day}`;
+        if (activeDaysWithClasses.has(dateKey)) {
+          cell.classList.add('has-classes');
+        }
+
+        cell.onclick = () => {
+          currentMonday = getMonday(cellDate);
+          calendarPopup.style.display = 'none';
+          loadSchedule();
+        };
+
+        calendarGrid.appendChild(cell);
+      }
+    }
+
+    // ПОИСК С ФОЛЛБЭКОМ НА РЕГИСТР И ПРЕОБРАЗОВАНИЕМ
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
+
+    async function fetchSearchQuery(queryText, signal) {
+      const targetUrl = `${API_BASE}/search?q=${queryText}`;
+      const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { signal });
+      const htmlText = await res.text();
+      
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, 'text/html');
+      
+      const items = [];
+      const links = doc.querySelectorAll('a[href*="/schedule/"]');
+      
+      links.forEach(a => {
+        const href = a.getAttribute('href') || '';
+        const name = a.textContent.replace(/\s+/g, ' ').trim();
+        if (!name || name === 'Расписание' || name.toLowerCase().includes('войти')) return;
+
+        const cleanHref = href.split('?')[0];
+        const parts = cleanHref.split('/').filter(Boolean);
+        
+        const typeIndex = parts.indexOf('schedule');
+        if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
+
+        const typeStr = parts[typeIndex + 1].toLowerCase();
+        const id = parseInt(parts[typeIndex + 2], 10);
+        if (!id) return;
+
+        let targetType = 2;
+        let typeName = 'Группа';
+        if (typeStr.includes('person') || typeStr.includes('teacher')) {
+          targetType = 1;
+          typeName = 'Преподаватель';
+        } else if (typeStr.includes('aud') || typeStr.includes('room')) {
+          targetType = 3;
+          typeName = 'Аудитория';
+        } else if (typeStr.includes('group')) {
+          targetType = 2;
+          typeName = 'Группа';
+        }
+
+        if (!items.some(it => it.id === id && it.targetType === targetType)) {
+          items.push({ id, name, targetType, typeName });
+        }
+      });
+
+      return items;
+    }
 
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
@@ -759,51 +1106,14 @@
         currentSearchController = new AbortController();
 
         try {
-          // Чистый URL: кодируется ровно 1 раз оберткой прокси
-          const targetUrl = `${API_BASE}/search?q=${query}`;
-          const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), {
-            signal: currentSearchController.signal
-          });
-          const htmlText = await res.text();
-          
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(htmlText, 'text/html');
-          
-          const items = [];
-          const links = doc.querySelectorAll('a[href*="/schedule/"]');
-          
-          links.forEach(a => {
-            const href = a.getAttribute('href') || '';
-            const name = a.textContent.replace(/\s+/g, ' ').trim();
-            if (!name || name === 'Расписание' || name.toLowerCase().includes('войти')) return;
+          // 1. Пробуем исходный запрос
+          let items = await fetchSearchQuery(query, currentSearchController.signal);
 
-            const cleanHref = href.split('?')[0];
-            const parts = cleanHref.split('/').filter(Boolean);
-            
-            const typeIndex = parts.indexOf('schedule');
-            if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
-
-            const typeStr = parts[typeIndex + 1].toLowerCase();
-            const id = parseInt(parts[typeIndex + 2], 10);
-            if (!id) return;
-
-            let targetType = 2;
-            let typeName = 'Группа';
-            if (typeStr.includes('person') || typeStr.includes('teacher')) {
-              targetType = 1;
-              typeName = 'Преподаватель';
-            } else if (typeStr.includes('aud') || typeStr.includes('room')) {
-              targetType = 3;
-              typeName = 'Аудитория';
-            } else if (typeStr.includes('group')) {
-              targetType = 2;
-              typeName = 'Группа';
-            }
-
-            if (!items.some(it => it.id === id && it.targetType === targetType)) {
-              items.push({ id, name, targetType, typeName });
-            }
-          });
+          // 2. Если пусто — пробуем с заглавной буквы (например "Ярцева")
+          if (!items.length) {
+            const capitalized = query.charAt(0).toUpperCase() + query.slice(1);
+            items = await fetchSearchQuery(capitalized, currentSearchController.signal);
+          }
 
           setCache(cacheKey, items);
           renderAutocomplete(items);
@@ -845,7 +1155,7 @@
       loadSchedule();
     }
 
-    // Каталог факультетов и групп
+    // КАТАЛОГ ФАКУЛЬТЕТОВ И ГРУПП
     let catalogStep = 1;
     let selectedInstitute = null;
 
@@ -888,7 +1198,7 @@
         return;
       }
 
-      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка направлений...</div>';
+      container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка специальностей...</div>';
 
       try {
         const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSpecialities`), {
@@ -979,12 +1289,125 @@
       }
     }
 
+    // ТЕМЫ И КАСТОМИЗАЦИЯ ЦВЕТОВ
+    const THEME_PRESETS = {
+      dark: {
+        '--bg': '#0b0f19',
+        '--card-bg': '#151d30',
+        '--text': '#f1f5f9',
+        '--text-muted': '#94a3b8',
+        '--border': 'rgba(255, 255, 255, 0.08)',
+        '--accent': '#38bdf8',
+        '--lecture-bg': 'rgba(16, 185, 129, 0.15)',
+        '--lecture-border': 'rgba(16, 185, 129, 0.45)',
+        '--lecture-badge': '#10b981',
+        '--practice-bg': 'rgba(245, 158, 11, 0.15)',
+        '--practice-border': 'rgba(245, 158, 11, 0.45)',
+        '--practice-badge': '#f59e0b'
+      },
+      light: {
+        '--bg': '#f8fafc',
+        '--card-bg': '#ffffff',
+        '--text': '#0f172a',
+        '--text-muted': '#64748b',
+        '--border': 'rgba(0, 0, 0, 0.08)',
+        '--accent': '#0284c7',
+        '--lecture-bg': 'rgba(16, 185, 129, 0.12)',
+        '--lecture-border': 'rgba(16, 185, 129, 0.4)',
+        '--lecture-badge': '#10b981',
+        '--practice-bg': 'rgba(245, 158, 11, 0.12)',
+        '--practice-border': 'rgba(245, 158, 11, 0.4)',
+        '--practice-badge': '#f59e0b'
+      },
+      oled: {
+        '--bg': '#000000',
+        '--card-bg': '#0f0f11',
+        '--text': '#ffffff',
+        '--text-muted': '#a1a1aa',
+        '--border': 'rgba(255, 255, 255, 0.12)',
+        '--accent': '#38bdf8',
+        '--lecture-bg': 'rgba(16, 185, 129, 0.15)',
+        '--lecture-border': 'rgba(16, 185, 129, 0.5)',
+        '--lecture-badge': '#10b981',
+        '--practice-bg': 'rgba(245, 158, 11, 0.15)',
+        '--practice-border': 'rgba(245, 158, 11, 0.5)',
+        '--practice-badge': '#f59e0b'
+      }
+    };
+
+    let userTheme = JSON.parse(localStorage.getItem('customUserTheme')) || THEME_PRESETS.dark;
+
+    function applyCurrentTheme() {
+      Object.keys(userTheme).forEach(prop => {
+        document.documentElement.style.setProperty(prop, userTheme[prop]);
+      });
+      syncThemePickers();
+    }
+
+    function syncThemePickers() {
+      const getHex = (v) => v.startsWith('#') ? v : '#38bdf8';
+      if (document.getElementById('picker-bg')) {
+        document.getElementById('picker-bg').value = getHex(userTheme['--bg'] || '#0b0f19');
+        document.getElementById('picker-card').value = getHex(userTheme['--card-bg'] || '#151d30');
+        document.getElementById('picker-accent').value = getHex(userTheme['--accent'] || '#38bdf8');
+        document.getElementById('picker-lecture').value = getHex(userTheme['--lecture-badge'] || '#10b981');
+        document.getElementById('picker-practice').value = getHex(userTheme['--practice-badge'] || '#f59e0b');
+        document.getElementById('picker-text').value = getHex(userTheme['--text'] || '#f1f5f9');
+      }
+    }
+
+    function applyPreset(name) {
+      userTheme = { ...THEME_PRESETS[name] };
+      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
+      applyCurrentTheme();
+    }
+
+    function onCustomColorChange(variableName, hexValue) {
+      userTheme[variableName] = hexValue;
+      document.documentElement.style.setProperty(variableName, hexValue);
+      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
+    }
+
+    function onCustomLectureChange(hexValue) {
+      userTheme['--lecture-badge'] = hexValue;
+      userTheme['--lecture-bg'] = hexValue + '22';
+      userTheme['--lecture-border'] = hexValue + '77';
+      document.documentElement.style.setProperty('--lecture-badge', hexValue);
+      document.documentElement.style.setProperty('--lecture-bg', hexValue + '22');
+      document.documentElement.style.setProperty('--lecture-border', hexValue + '77');
+      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
+    }
+
+    function onCustomPracticeChange(hexValue) {
+      userTheme['--practice-badge'] = hexValue;
+      userTheme['--practice-bg'] = hexValue + '22';
+      userTheme['--practice-border'] = hexValue + '77';
+      document.documentElement.style.setProperty('--practice-badge', hexValue);
+      document.documentElement.style.setProperty('--practice-bg', hexValue + '22');
+      document.documentElement.style.setProperty('--practice-border', hexValue + '77');
+      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
+    }
+
+    function openThemeModal() {
+      document.getElementById('themeModal').style.display = 'flex';
+      syncThemePickers();
+    }
+
+    function closeThemeModal() {
+      document.getElementById('themeModal').style.display = 'none';
+    }
+
+    // Закрытие по клику вне элементов
     document.addEventListener('click', (e) => {
       if (!searchInput.contains(e.target) && !autoList.contains(e.target)) {
         autoList.style.display = 'none';
       }
+      if (!calendarPopup.contains(e.target) && !document.getElementById('calendarToggleBtn').contains(e.target)) {
+        calendarPopup.style.display = 'none';
+      }
     });
 
+    applyCurrentTheme();
     loadSchedule();
   </script>
 </body>
