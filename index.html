@@ -33,7 +33,7 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      padding: 20px 14px;
+      padding: 16px 12px;
       display: flex;
       justify-content: center;
     }
@@ -43,8 +43,8 @@
     header {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     .header-top {
@@ -55,12 +55,12 @@
       gap: 10px;
     }
 
-    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    h1 { font-size: 1.4rem; font-weight: 700; color: #fff; }
     .status-text { font-size: 0.8rem; color: var(--text-muted); }
 
     .search-row {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
     }
 
@@ -74,7 +74,7 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: #fff;
-      padding: 12px 16px;
+      padding: 12px 14px;
       border-radius: 12px;
       font-size: 0.95rem;
       outline: none;
@@ -86,10 +86,10 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 12px 16px;
+      padding: 12px 14px;
       border-radius: 12px;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
       white-space: nowrap;
       transition: all 0.2s;
@@ -115,9 +115,9 @@
     }
 
     .autocomplete-item {
-      padding: 12px 16px;
+      padding: 12px 14px;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       border-bottom: 1px solid rgba(255,255,255,0.05);
       display: flex;
       justify-content: space-between;
@@ -125,47 +125,65 @@
     }
     .autocomplete-item:last-child { border-bottom: none; }
     .autocomplete-item:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
-    .autocomplete-type { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
+    /* Навигация по неделям + календарь */
     .week-nav-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: var(--card-bg);
-      padding: 8px 12px;
+      padding: 8px 10px;
       border-radius: 12px;
       border: 1px solid var(--border);
-      margin-bottom: 20px;
-      gap: 8px;
+      margin-bottom: 18px;
+      gap: 6px;
     }
 
     .nav-btn {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 600;
       transition: background 0.2s;
+      white-space: nowrap;
     }
     .nav-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
     .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    .current-week-label {
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: #fff;
-      text-align: center;
+    .date-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
     }
 
+    .date-picker-input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      color-scheme: dark;
+    }
+
+    /* Карточки дней */
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 18px;
+      padding: 14px;
+      margin-bottom: 16px;
     }
 
     .day-header {
@@ -176,8 +194,8 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
-    .day-title { font-size: 1.15rem; font-weight: 700; color: #fff; }
-    .day-date { font-size: 0.88rem; color: var(--text-muted); }
+    .day-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .day-date { font-size: 0.85rem; color: var(--text-muted); }
 
     .break-indicator {
       display: flex;
@@ -200,7 +218,7 @@
       display: grid;
       grid-template-columns: 85px 1fr auto;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       padding: 12px 14px;
       border-radius: 10px;
       margin-bottom: 6px;
@@ -231,10 +249,10 @@
 
     .lesson-main { display: flex; flex-direction: column; gap: 4px; }
     .lesson-title { font-size: 0.95rem; font-weight: 600; color: #fff; line-height: 1.3; }
-    .lesson-meta { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; flex-wrap: wrap; }
+    .lesson-meta { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; flex-wrap: wrap; }
 
     .badge {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
       padding: 2px 6px;
       border-radius: 4px;
@@ -276,6 +294,7 @@
       padding: 10px 0;
     }
 
+    /* Модалка каталога */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -349,6 +368,7 @@
       .lesson-item { grid-template-columns: 1fr; gap: 8px; }
       .teacher-block { text-align: left; }
       .search-row { flex-direction: column; align-items: stretch; }
+      .week-nav-bar { flex-wrap: wrap; justify-content: center; }
     }
   </style>
 </head>
@@ -376,9 +396,12 @@
     </header>
 
     <div class="week-nav-bar">
-      <button class="nav-btn" onclick="changeWeek(-1)">← Предыдущая</button>
-      <div id="currentWeekLabel" class="current-week-label">Неделя</div>
-      <button class="nav-btn" onclick="changeWeek(1)">Следующая →</button>
+      <button class="nav-btn" onclick="changeWeek(-1)">← Назад</button>
+      <div class="date-picker-wrap">
+        <span>📅</span>
+        <input type="date" id="weekDatePicker" class="date-picker-input" onchange="onDatePicked(this.value)">
+      </div>
+      <button class="nav-btn" onclick="changeWeek(1)">Вперед →</button>
     </div>
 
     <div id="scheduleContainer"></div>
@@ -470,7 +493,23 @@
       d = new Date(d);
       const day = d.getDay();
       const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      return new Date(d.setDate(diff));
+      const mon = new Date(d.setDate(diff));
+      mon.setHours(0, 0, 0, 0);
+      return mon;
+    }
+
+    function formatToYMD(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function onDatePicked(val) {
+      if (!val) return;
+      const [y, m, d] = val.split('-').map(Number);
+      currentMonday = getMonday(new Date(y, m - 1, d));
+      loadSchedule();
     }
 
     function extractTime(isoStr, pairNum, isEnd = false) {
@@ -536,8 +575,8 @@
       const container = document.getElementById('scheduleContainer');
       document.getElementById('groupTitle').innerText = currentTarget.name;
 
-      const dateStr = currentMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-      document.getElementById('currentWeekLabel').innerText = `С ${dateStr}`;
+      // Синхронизируем значение календаря с текущим понедельником
+      document.getElementById('weekDatePicker').value = formatToYMD(currentMonday);
       
       const isoDate = currentMonday.toISOString();
       const cacheKey = `sched_${currentTarget.type}_${currentTarget.id}_${isoDate}`;
@@ -692,7 +731,7 @@
       loadSchedule();
     }
 
-    // Живой поиск
+    // Живой поиск без двойного экранирования
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
@@ -720,7 +759,8 @@
         currentSearchController = new AbortController();
 
         try {
-          const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(query)}`;
+          // Чистый URL: кодируется ровно 1 раз оберткой прокси
+          const targetUrl = `${API_BASE}/search?q=${query}`;
           const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), {
             signal: currentSearchController.signal
           });
@@ -730,31 +770,37 @@
           const doc = parser.parseFromString(htmlText, 'text/html');
           
           const items = [];
-          const links = doc.querySelectorAll('a[href*="/schedule/group/"], a[href*="/schedule/person/"], a[href*="/schedule/auditorium/"], a[href*="/schedule/teacher/"], a[href*="/schedule/room/"]');
+          const links = doc.querySelectorAll('a[href*="/schedule/"]');
           
           links.forEach(a => {
             const href = a.getAttribute('href') || '';
-            const name = a.textContent.trim();
+            const name = a.textContent.replace(/\s+/g, ' ').trim();
+            if (!name || name === 'Расписание' || name.toLowerCase().includes('войти')) return;
+
             const cleanHref = href.split('?')[0];
             const parts = cleanHref.split('/').filter(Boolean);
             
-            const typeStr = parts[1] || '';
-            const id = parseInt(parts[2], 10);
-            
+            const typeIndex = parts.indexOf('schedule');
+            if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
+
+            const typeStr = parts[typeIndex + 1].toLowerCase();
+            const id = parseInt(parts[typeIndex + 2], 10);
+            if (!id) return;
+
             let targetType = 2;
             let typeName = 'Группа';
-            if (typeStr === 'person' || typeStr === 'teacher') {
+            if (typeStr.includes('person') || typeStr.includes('teacher')) {
               targetType = 1;
               typeName = 'Преподаватель';
-            } else if (typeStr === 'auditorium' || typeStr === 'room' || typeStr === 'aud') {
+            } else if (typeStr.includes('aud') || typeStr.includes('room')) {
               targetType = 3;
               typeName = 'Аудитория';
-            } else if (typeStr === 'group') {
+            } else if (typeStr.includes('group')) {
               targetType = 2;
               typeName = 'Группа';
             }
 
-            if (id && name && !items.some(it => it.id === id && it.targetType === targetType)) {
+            if (!items.some(it => it.id === id && it.targetType === targetType)) {
               items.push({ id, name, targetType, typeName });
             }
           });
@@ -766,7 +812,7 @@
             console.error('Ошибка поиска:', err);
           }
         }
-      }, 250);
+      }, 200);
     });
 
     function renderAutocomplete(items) {
@@ -799,7 +845,7 @@
       loadSchedule();
     }
 
-    // Логика каталога
+    // Каталог факультетов и групп
     let catalogStep = 1;
     let selectedInstitute = null;
 
