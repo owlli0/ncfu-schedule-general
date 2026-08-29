@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.8.1 -->
+  <!-- x.9 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -67,7 +67,6 @@
     h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
     .status-text { font-size: 0.8rem; color: var(--text-muted); }
 
-    /* Переключатель подгрупп */
     .subgroup-toggle {
       display: inline-flex;
       background: rgba(0, 0, 0, 0.35);
@@ -932,8 +931,42 @@
   </div>
 
   <script>
-    const PROXY_URL = 'https://corsproxy.io/?url=';
     const API_BASE = 'https://ecampus.ncfu.ru/schedule';
+
+    // ОТКАТОУСТОЙЧИВЫЙ СПИСОК CORS-ПРОКСИ С АВТОПЕРЕКЛЮЧЕНИЕМ
+    const CUSTOM_WORKER_URL = ''; // Если есть свой воркер, вставь 'https://твой-воркер.workers.dev/?url='
+
+    const PROXY_PROVIDERS = [
+      ...(CUSTOM_WORKER_URL ? [(url) => `${CUSTOM_WORKER_URL}${encodeURIComponent(url)}`] : []),
+      (url) => `https://api.cors.lol/?url=${encodeURIComponent(url)}`,
+      (url) => `https://proxy.corsfix.com/?${url}`,
+      (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`
+    ];
+
+    let currentProxyIndex = 0;
+
+    async function fetchWithProxy(targetUrl, options = {}) {
+      let lastError = null;
+      for (let i = 0; i < PROXY_PROVIDERS.length; i++) {
+        const pIdx = (currentProxyIndex + i) % PROXY_PROVIDERS.length;
+        const proxyUrl = PROXY_PROVIDERS[pIdx](targetUrl);
+
+        try {
+          const res = await fetch(proxyUrl, options);
+          if (res.ok || res.status === 302) {
+            currentProxyIndex = pIdx;
+            return res;
+          } else if (res.status === 401 || res.status === 403 || res.status === 429 || res.status >= 500) {
+            throw new Error(`HTTP ${res.status}`);
+          }
+          return res;
+        } catch (err) {
+          if (err.name === 'AbortError') throw err;
+          lastError = err;
+        }
+      }
+      throw lastError || new Error('Все прокси-серверы недоступны');
+    }
 
     const CALL_TIMES = {
       1: { start: "08:00", end: "09:30" },
@@ -1072,19 +1105,16 @@
       return rawType.trim();
     }
 
-    // Умная нормализация названия группы (инсбо262 -> ИНС-б-о-26-2)
     function normalizeGroupQuery(raw) {
       if (!raw) return raw;
       const clean = raw.trim().replace(/[\s\-_]+/g, '');
       
-      // Шаблон 1: инсбо262 или стрбоз221
       const m1 = clean.match(/^([а-яёa-z]+?)(б|м|с|а)(о|з|оз)(\d{2})(\d*)$/i);
       if (m1) {
         const part5 = m1[5] ? `-${m1[5]}` : '';
         return `${m1[1].toUpperCase()}-${m1[2].toLowerCase()}-${m1[3].toLowerCase()}-${m1[4]}${part5}`;
       }
 
-      // Шаблон 2: инс262 -> ИНС 26-2
       const m2 = clean.match(/^([а-яёa-z]+?)(\d{2})(\d+)$/i);
       if (m2) {
         return `${m2[1].toUpperCase()}-${m2[2]}-${m2[3]}`;
@@ -1121,7 +1151,7 @@
         const iso = d.toISOString();
         const cacheKey = `sched_${currentTarget.type}_${currentTarget.id}_${iso}`;
         if (!getCache(cacheKey)) {
-          fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSchedule`), {
+          fetchWithProxy(`${API_BASE}/GetSchedule`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1160,7 +1190,7 @@
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 40px 0;">Загрузка расписания...</div>';
 
       try {
-        const response = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSchedule`), {
+        const response = await fetchWithProxy(`${API_BASE}/GetSchedule`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1178,7 +1208,7 @@
         prefetchAdjacentWeeks();
       } catch (err) {
         statusEl.innerText = 'Ошибка сети';
-        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные.</div>';
+        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные. Попробуйте обновить страницу.</div>';
       }
     }
 
@@ -1411,7 +1441,7 @@
       }
     }
 
-    // ПОИСК С УМНОЙ НОРМАЛИЗАЦИЕЙ СЛИТНЫХ НАЗВАНИЙ
+    // ПОИСК
     let searchTimeout = null;
     let currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
@@ -1419,7 +1449,7 @@
 
     async function queryServerSearch(text, signal) {
       const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(text)}`;
-      const res = await fetch(PROXY_URL + encodeURIComponent(targetUrl), { signal });
+      const res = await fetchWithProxy(targetUrl, { signal });
       const htmlText = await res.text();
       const items = [];
 
@@ -1495,10 +1525,8 @@
       try {
         const normalized = normalizeGroupQuery(queryText);
         
-        // 1. Пробуем нормализованный вариант (например, инсбо262 -> ИНС-б-о-26-2)
         let items = await queryServerSearch(normalized, currentSearchController.signal);
 
-        // 2. Если ничего не найдено и нормализация изменила текст, пробуем исходный
         if (!items.length && normalized !== queryText) {
           items = await queryServerSearch(queryText, currentSearchController.signal);
         }
@@ -1627,7 +1655,7 @@
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка специальностей...</div>';
 
       try {
-        const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetSpecialities`), {
+        const res = await fetchWithProxy(`${API_BASE}/GetSpecialities`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ instituteId: inst.Id, branchId: inst.BranchId })
@@ -1671,7 +1699,7 @@
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка групп...</div>';
 
       try {
-        const res = await fetch(PROXY_URL + encodeURIComponent(`${API_BASE}/GetAcademicGroups`), {
+        const res = await fetchWithProxy(`${API_BASE}/GetAcademicGroups`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ instituteId: instId, specialty: specName, branchId: branchId })
