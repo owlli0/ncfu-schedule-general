@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.9 -->
+  <!-- x.10 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -184,7 +184,6 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.06); color: var(--accent); }
     .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Навигация по неделям + календарь */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -311,7 +310,6 @@
       background-color: #000;
     }
 
-    /* Карточки дней (Desktop) */
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -428,7 +426,6 @@
       padding: 10px 0;
     }
 
-    /* Модальные окна */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -557,9 +554,6 @@
     .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
     .color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 8px; }
 
-    /* ========================================================
-       МОБИЛЬНЫЙ ДИЗАЙН: ВСЁ СЛЕВА, ТОЛЬКО ФИО СПРАВА
-       ======================================================== */
     @media (max-width: 650px) {
       body {
         padding: 0 8px 24px 8px;
@@ -933,14 +927,13 @@
   <script>
     const API_BASE = 'https://ecampus.ncfu.ru/schedule';
 
-    // ОТКАТОУСТОЙЧИВЫЙ СПИСОК CORS-ПРОКСИ С АВТОПЕРЕКЛЮЧЕНИЕМ
-    const CUSTOM_WORKER_URL = ''; // Если есть свой воркер, вставь 'https://твой-воркер.workers.dev/?url='
+    // Твой персональный Cloudflare Worker
+    const WORKER_PROXY_URL = 'https://morning-cloud-895b.balavensydbu.workers.dev/?url=';
 
     const PROXY_PROVIDERS = [
-      ...(CUSTOM_WORKER_URL ? [(url) => `${CUSTOM_WORKER_URL}${encodeURIComponent(url)}`] : []),
+      (url) => `${WORKER_PROXY_URL}${encodeURIComponent(url)}`,
       (url) => `https://api.cors.lol/?url=${encodeURIComponent(url)}`,
-      (url) => `https://proxy.corsfix.com/?${url}`,
-      (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`
+      (url) => `https://proxy.corsfix.com/?${url}`
     ];
 
     let currentProxyIndex = 0;
