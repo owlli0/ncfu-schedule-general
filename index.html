@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.13 текущая дата -->
+  <!-- х.14 current date  -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
-
+  
+  <!-- PWA параметры -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0b0f19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -13,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Расписание">
   <link rel="apple-touch-icon" href="icon-192.png">
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -201,7 +202,7 @@
       padding: 8px 10px;
       border-radius: 12px;
       border: 1px solid var(--border);
-      margin-bottom: 18px;
+      margin-bottom: 14px;
       gap: 8px;
       position: relative;
     }
@@ -319,12 +320,41 @@
       background-color: #000;
     }
 
+    /* Кнопка показа прошедших дней */
+    .past-days-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .past-days-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
     .day-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 14px;
       margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .day-card.today-card {
+      border-color: rgba(56, 189, 248, 0.45);
     }
 
     .day-header {
@@ -335,7 +365,21 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
+    .day-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .day-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .today-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--accent);
+      color: #000;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
     .day-date { font-size: 0.85rem; color: var(--text-muted); }
 
     .break-indicator {
@@ -649,7 +693,7 @@
 
       .week-nav-bar {
         padding: 5px 6px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         gap: 4px;
         border-radius: 10px;
       }
@@ -850,7 +894,7 @@
       
       <button class="date-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
         <span>📅</span>
-        <span id="currentWeekText">7 сентября 2026 г.</span>
+        <span id="currentWeekText">Текущая неделя</span>
       </button>
 
       <button class="nav-btn" onclick="changeWeek(1)">Вперед →</button>
@@ -858,7 +902,7 @@
       <div id="calendarPopup" class="custom-calendar-popup">
         <div class="calendar-header">
           <button class="cal-nav-btn" onclick="changeCalMonth(-1)">←</button>
-          <span class="cal-title" id="calMonthTitle">Сентябрь 2026</span>
+          <span class="cal-title" id="calMonthTitle">Календарь</span>
           <button class="cal-nav-btn" onclick="changeCalMonth(1)">→</button>
         </div>
         <div class="calendar-grid" id="calendarGrid"></div>
@@ -1045,10 +1089,7 @@
 
     let selectedSubgroup = localStorage.getItem('savedSubgroup') || 'all';
     let lastLoadedDays = null;
-
-    let currentMonday = getMonday(new Date());
-    let calendarMonthDate = new Date(currentMonday);
-    let activeDaysWithClasses = new Set();
+    let showPastDaysForCurrentWeek = false;
 
     function getMonday(d) {
       d = new Date(d);
@@ -1058,6 +1099,11 @@
       mon.setHours(0, 0, 0, 0);
       return mon;
     }
+
+    // ДИНАМИЧЕСКИЙ СТАРТ С ТЕКУЩЕЙ НЕДЕЛИ
+    let currentMonday = getMonday(new Date());
+    let calendarMonthDate = new Date(currentMonday);
+    let activeDaysWithClasses = new Set();
 
     function extractTime(isoStr, pairNum, isEnd = false) {
       if (isoStr && isoStr.includes('T')) {
@@ -1149,6 +1195,13 @@
       }
     }
 
+    function togglePastDays() {
+      showPastDaysForCurrentWeek = !showPastDaysForCurrentWeek;
+      if (lastLoadedDays) {
+        renderSchedule(lastLoadedDays);
+      }
+    }
+
     function prefetchAdjacentWeeks() {
       [-1, 1].forEach(offset => {
         const d = new Date(currentMonday);
@@ -1228,27 +1281,39 @@
         return;
       }
 
-      days.forEach(day => {
-        const card = document.createElement('div');
-        card.className = 'day-card';
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const realCurrentMonday = getMonday(now);
+      const isViewingCurrentWeek = currentMonday.getTime() === realCurrentMonday.getTime();
 
+      let hiddenPastDaysCount = 0;
+      const dayCardsToRender = [];
+
+      days.forEach(day => {
         let dateStr = '';
+        let localDate = null;
+        let isPastDay = false;
+        let isToday = false;
+
         if (day.Date) {
           const datePart = day.Date.split('T')[0];
           const [y, m, d] = datePart.split('-');
-          const localDate = new Date(y, m - 1, d);
+          localDate = new Date(y, m - 1, d);
+          localDate.setHours(0,0,0,0);
           dateStr = localDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-        }
 
-        card.innerHTML = `
-          <div class="day-header">
-            <span class="day-title">${day.WeekDay || ''}</span>
-            <span class="day-date">${dateStr}</span>
-          </div>
-        `;
+          if (isViewingCurrentWeek) {
+            if (localDate.getTime() < today.getTime()) {
+              isPastDay = true;
+            } else if (localDate.getTime() === today.getTime()) {
+              isToday = true;
+            }
+          }
+        }
 
         let lessons = day.Lessons || [];
 
+        // Фильтрация по подгруппе
         if (currentTarget.type === 2 && selectedSubgroup !== 'all') {
           lessons = lessons.filter(l => {
             let sg = '';
@@ -1265,12 +1330,28 @@
           });
         }
 
-        if (day.Date && lessons.length > 0) {
-          const datePart = day.Date.split('T')[0];
-          const [y, m, d] = datePart.split('-');
-          const localDate = new Date(y, m - 1, d);
+        if (localDate && lessons.length > 0) {
           activeDaysWithClasses.add(`${localDate.getFullYear()}-${localDate.getMonth()}-${localDate.getDate()}`);
         }
+
+        // Если это прошедший день текущей недели и они скрыты
+        if (isPastDay && !showPastDaysForCurrentWeek) {
+          hiddenPastDaysCount++;
+          return;
+        }
+
+        const card = document.createElement('div');
+        card.className = `day-card ${isToday ? 'today-card' : ''}`;
+
+        card.innerHTML = `
+          <div class="day-header">
+            <div class="day-title-wrap">
+              <span class="day-title">${day.WeekDay || ''}</span>
+              ${isToday ? '<span class="today-badge">Сегодня</span>' : ''}
+            </div>
+            <span class="day-date">${dateStr}</span>
+          </div>
+        `;
 
         if (!lessons.length) {
           card.innerHTML += '<div class="empty-day">Пар нет</div>';
@@ -1352,8 +1433,31 @@
           });
         }
 
-        container.appendChild(card);
+        dayCardsToRender.push(card);
       });
+
+      // Кнопка управления показом прошедших дней на текущей неделе
+      if (isViewingCurrentWeek) {
+        if (hiddenPastDaysCount > 0) {
+          const toggleBtn = document.createElement('button');
+          toggleBtn.className = 'past-days-toggle-btn';
+          toggleBtn.innerHTML = `<span>🕒</span> Показать прошедшие дни этой недели (${hiddenPastDaysCount})`;
+          toggleBtn.onclick = togglePastDays;
+          container.appendChild(toggleBtn);
+        } else if (showPastDaysForCurrentWeek) {
+          const toggleBtn = document.createElement('button');
+          toggleBtn.className = 'past-days-toggle-btn';
+          toggleBtn.innerHTML = `<span>▲</span> Скрыть прошедшие дни`;
+          toggleBtn.onclick = togglePastDays;
+          container.appendChild(toggleBtn);
+        }
+      }
+
+      if (dayCardsToRender.length === 0) {
+        container.innerHTML += '<div class="day-card empty-day">Все пары на этой неделе завершены 🎉</div>';
+      } else {
+        dayCardsToRender.forEach(c => container.appendChild(c));
+      }
 
       renderCalendarGrid();
     }
@@ -1361,6 +1465,7 @@
     function changeWeek(offset) {
       currentMonday.setDate(currentMonday.getDate() + (offset * 7));
       calendarMonthDate = new Date(currentMonday);
+      showPastDaysForCurrentWeek = false;
       loadSchedule();
     }
 
@@ -1438,6 +1543,7 @@
 
         cell.onclick = () => {
           currentMonday = getMonday(cellDate);
+          showPastDaysForCurrentWeek = false;
           calendarPopup.style.display = 'none';
           loadSchedule();
         };
@@ -1873,10 +1979,12 @@
 
     applyCurrentTheme();
     loadSchedule();
+
+    // Регистрация Service Worker для PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-       navigator.serviceWorker.register('./sw.js').catch((err) => {
-      console.error('Ошибка регистрации Service Worker:', err);
+        navigator.serviceWorker.register('./sw.js').catch((err) => {
+          console.error('Ошибка регистрации Service Worker:', err);
         });
       });
     }
