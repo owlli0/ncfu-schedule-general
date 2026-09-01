@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- х.14 current date  -->
+  <!-- x.15 main activity -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -77,6 +77,18 @@
     h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
     .status-text { font-size: 0.8rem; color: var(--text-muted); }
 
+    .fav-star-btn {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #eab308;
+      transition: transform 0.15s;
+      padding: 2px 4px;
+    }
+    .fav-star-btn:hover { transform: scale(1.15); }
+    .fav-star-btn.inactive { color: var(--text-muted); opacity: 0.5; }
+
     .subgroup-toggle {
       display: inline-flex;
       background: rgba(0, 0, 0, 0.35);
@@ -110,20 +122,27 @@
       gap: 8px;
     }
 
-    .theme-btn {
+    .action-btn {
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text);
       padding: 8px 12px;
       border-radius: 10px;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
     }
-    .theme-btn:hover { border-color: var(--accent); }
+    .action-btn:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
+    .action-btn.active-tab {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
 
     .search-row {
       display: flex;
@@ -194,6 +213,161 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.06); color: var(--accent); }
     .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
+    /* ========================================================
+       ГЛАВНЫЙ ЭКРАН (ДАШБОРД)
+       ======================================================== */
+    #homeDashboard {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .live-status-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .live-status-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), #10b981);
+    }
+
+    .live-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .live-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+    .live-time-now { font-size: 0.9rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 600; }
+
+    .live-desc {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .dashboard-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+    }
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .chip-item:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .empty-chips-hint {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .bells-table {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .bell-row {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+    .bell-row.active-bell {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+    .bell-num { font-weight: 700; color: var(--text); }
+    .bell-hours { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+    .bell-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+    }
+    .bell-row.active-bell .bell-tag {
+      background: var(--accent);
+      color: #000;
+    }
+    .bell-break {
+      text-align: center;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      padding: 4px 0;
+      font-weight: 500;
+    }
+    .bell-break.active-break {
+      color: var(--practice-badge);
+      font-weight: 700;
+    }
+
+    /* ========================================================
+       ЭКРАН РАСПИСАНИЯ
+       ======================================================== */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -320,7 +494,6 @@
       background-color: #000;
     }
 
-    /* Кнопка показа прошедших дней */
     .past-days-toggle-btn {
       display: flex;
       align-items: center;
@@ -479,6 +652,7 @@
       padding: 10px 0;
     }
 
+    /* Модальные окна */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -636,7 +810,7 @@
 
       .header-title-wrap {
         gap: 6px;
-        max-width: 70vw;
+        max-width: 65vw;
       }
 
       h1 {
@@ -645,7 +819,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 44vw;
+        max-width: 42vw;
         text-align: left;
       }
 
@@ -663,8 +837,8 @@
         gap: 6px;
       }
 
-      .theme-btn {
-        padding: 4px 8px;
+      .action-btn {
+        padding: 5px 8px;
         font-size: 0.78rem;
         border-radius: 8px;
       }
@@ -730,13 +904,8 @@
         padding-bottom: 4px;
       }
 
-      .day-title {
-        font-size: 0.95rem;
-      }
-
-      .day-date {
-        font-size: 0.78rem;
-      }
+      .day-title { font-size: 0.95rem; }
+      .day-date { font-size: 0.78rem; }
 
       .break-indicator {
         margin: 6px 0;
@@ -812,17 +981,8 @@
         width: 100%;
       }
 
-      .badge {
-        font-size: 0.68rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-      }
-
-      .subgroup-tag, .room-tag {
-        font-size: 0.72rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-      }
+      .badge { font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; }
+      .subgroup-tag, .room-tag { font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; }
 
       .teacher-block {
         align-self: flex-end;
@@ -859,8 +1019,10 @@
     <header>
       <div class="header-top">
         <div class="header-title-wrap">
-          <h1 id="groupTitle">ИНС-б-о-26-2</h1>
+          <h1 id="groupTitle">Главная</h1>
           
+          <button id="favBtn" class="fav-star-btn" onclick="toggleCurrentFavorite()" title="Добавить в избранное" style="display: none;">★</button>
+
           <div id="subgroupToggle" class="subgroup-toggle" style="display: none;">
             <button class="sg-btn active" data-sg="all" onclick="setSubgroup('all')">Все</button>
             <button class="sg-btn" data-sg="1" onclick="setSubgroup('1')">1 п/г</button>
@@ -869,7 +1031,8 @@
         </div>
 
         <div class="header-actions">
-          <button class="theme-btn" onclick="openThemeModal()">🎨 Тема</button>
+          <button id="viewToggleBtn" class="action-btn" onclick="toggleMainView()">🏠 Главная</button>
+          <button class="action-btn" onclick="openThemeModal()">🎨 Тема</button>
           <div id="statusText" class="status-text">Загрузка...</div>
         </div>
       </div>
@@ -880,36 +1043,68 @@
             type="text" 
             id="searchInput" 
             class="search-input" 
-            placeholder="Поиск: группа, преподаватель или аудитория (Enter для перехода)..." 
+            placeholder="Введите группу, преподавателя или аудиторию..." 
             autocomplete="off"
           />
           <div id="autocompleteList" class="autocomplete-list"></div>
         </div>
-        <button class="catalog-btn" onclick="openCatalog()">🏛️ Каталог СКФУ</button>
+        <button class="catalog-btn" onclick="openCatalog()">🏛️ Каталог</button>
       </div>
     </header>
 
-    <div class="week-nav-bar">
-      <button class="nav-btn" onclick="changeWeek(-1)">← Назад</button>
-      
-      <button class="date-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
-        <span>📅</span>
-        <span id="currentWeekText">Текущая неделя</span>
-      </button>
-
-      <button class="nav-btn" onclick="changeWeek(1)">Вперед →</button>
-
-      <div id="calendarPopup" class="custom-calendar-popup">
-        <div class="calendar-header">
-          <button class="cal-nav-btn" onclick="changeCalMonth(-1)">←</button>
-          <span class="cal-title" id="calMonthTitle">Календарь</span>
-          <button class="cal-nav-btn" onclick="changeCalMonth(1)">→</button>
+    <!-- ГЛАВНЫЙ ЭКРАН (ДАШБОРД) -->
+    <div id="homeDashboard">
+      <div class="live-status-card">
+        <div class="live-header">
+          <span class="live-title">⚡ Сейчас в СКФУ</span>
+          <span id="liveClock" class="live-time-now">00:00:00</span>
         </div>
-        <div class="calendar-grid" id="calendarGrid"></div>
+        <div id="liveStatusText" class="live-desc">Определение статуса пар...</div>
+        <div class="progress-bar-wrap">
+          <div id="liveProgressBar" class="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <div class="section-title">⭐ Закладки и Избранное</div>
+        <div id="favoritesChips" class="chips-grid"></div>
+      </div>
+
+      <div class="dashboard-section">
+        <div class="section-title">🕒 Недавние</div>
+        <div id="recentChips" class="chips-grid"></div>
+      </div>
+
+      <div class="dashboard-section">
+        <div class="section-title">🔔 Расписание звонков</div>
+        <div class="bells-table" id="bellsScheduleTable"></div>
       </div>
     </div>
 
-    <div id="scheduleContainer"></div>
+    <!-- ЭКРАН РАСПИСАНИЯ -->
+    <div id="scheduleSection" style="display: none;">
+      <div class="week-nav-bar">
+        <button class="nav-btn" onclick="changeWeek(-1)">← Назад</button>
+        
+        <button class="date-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+          <span>📅</span>
+          <span id="currentWeekText">Текущая неделя</span>
+        </button>
+
+        <button class="nav-btn" onclick="changeWeek(1)">Вперед →</button>
+
+        <div id="calendarPopup" class="custom-calendar-popup">
+          <div class="calendar-header">
+            <button class="cal-nav-btn" onclick="changeCalMonth(-1)">←</button>
+            <span class="cal-title" id="calMonthTitle">Календарь</span>
+            <button class="cal-nav-btn" onclick="changeCalMonth(1)">→</button>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </div>
+
+      <div id="scheduleContainer"></div>
+    </div>
   </div>
 
   <div id="catalogModal" class="modal-overlay">
@@ -1081,11 +1276,13 @@
       } catch (e) {}
     }
 
-    let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || {
-      id: 19931,
-      name: 'ИНС-б-о-26-2',
-      type: 2
-    };
+    // Состояние приложения
+    let currentView = 'home'; // 'home' или 'schedule'
+    let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || null;
+    let favoritesList = JSON.parse(localStorage.getItem('favoriteTargets')) || [
+      { id: 19931, name: 'ИНС-б-о-26-2', type: 2 }
+    ];
+    let recentList = JSON.parse(localStorage.getItem('recentTargets')) || [];
 
     let selectedSubgroup = localStorage.getItem('savedSubgroup') || 'all';
     let lastLoadedDays = null;
@@ -1100,7 +1297,6 @@
       return mon;
     }
 
-    // ДИНАМИЧЕСКИЙ СТАРТ С ТЕКУЩЕЙ НЕДЕЛИ
     let currentMonday = getMonday(new Date());
     let calendarMonthDate = new Date(currentMonday);
     let activeDaysWithClasses = new Set();
@@ -1156,22 +1352,238 @@
       return rawType.trim();
     }
 
+    // Умная нормализация слитных названий групп (инсбо262 -> ИНС-б-о-26-2)
     function normalizeGroupQuery(raw) {
       if (!raw) return raw;
-      const clean = raw.trim().replace(/[\s\-_]+/g, '');
+      let s = raw.trim();
+      if (s.includes('-')) {
+        return s.toUpperCase().replace(/\s+/g, '');
+      }
+      const clean = s.replace(/[\s_]+/g, '');
       
-      const m1 = clean.match(/^([а-яёa-z]+?)(б|м|с|а)(о|з|оз)(\d{2})(\d*)$/i);
+      // Шаблон: спец(2-8 букв) + уровень(б/м/с/а) + форма(оз/зо/о/з) + год(2 цифры) + номер(цифры)
+      const m1 = clean.match(/^([а-яёa-z]{2,8}?)(б|м|с|а)(оз|зо|о|з)(\d{2})(\d*)$/i);
       if (m1) {
-        const part5 = m1[5] ? `-${m1[5]}` : '';
-        return `${m1[1].toUpperCase()}-${m1[2].toLowerCase()}-${m1[3].toLowerCase()}-${m1[4]}${part5}`;
+        const spec = m1[1].toUpperCase();
+        const level = m1[2].toLowerCase();
+        const form = m1[3].toLowerCase();
+        const year = m1[4];
+        const num = m1[5] ? `-${m1[5]}` : '';
+        return `${spec}-${level}-${form}-${year}${num}`;
       }
 
-      const m2 = clean.match(/^([а-яёa-z]+?)(\d{2})(\d+)$/i);
+      // Шаблон: спец + год + номер (инс262 -> ИНС-26-2)
+      const m2 = clean.match(/^([а-яёa-z]{2,8}?)(\d{2})(\d+)$/i);
       if (m2) {
         return `${m2[1].toUpperCase()}-${m2[2]}-${m2[3]}`;
       }
 
-      return raw;
+      return s;
+    }
+
+    // ========================================================
+    // ИЗБРАННОЕ И НЕДАВНИЕ
+    // ========================================================
+    function isTargetFavorite(target) {
+      if (!target) return false;
+      return favoritesList.some(f => f.id === target.id && f.type === target.type);
+    }
+
+    function toggleCurrentFavorite() {
+      if (!currentTarget) return;
+      if (isTargetFavorite(currentTarget)) {
+        favoritesList = favoritesList.filter(f => !(f.id === currentTarget.id && f.type === currentTarget.type));
+      } else {
+        favoritesList.push({ id: currentTarget.id, name: currentTarget.name, type: currentTarget.type });
+      }
+      localStorage.setItem('favoriteTargets', JSON.stringify(favoritesList));
+      updateFavBtnUI();
+      renderDashboardChips();
+    }
+
+    function updateFavBtnUI() {
+      const btn = document.getElementById('favBtn');
+      if (currentView === 'schedule' && currentTarget) {
+        btn.style.display = 'inline-block';
+        btn.classList.toggle('inactive', !isTargetFavorite(currentTarget));
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    function addToRecent(target) {
+      if (!target) return;
+      recentList = recentList.filter(r => !(r.id === target.id && r.type === target.type));
+      recentList.unshift({ id: target.id, name: target.name, type: target.type });
+      if (recentList.length > 6) recentList.pop();
+      localStorage.setItem('recentTargets', JSON.stringify(recentList));
+      renderDashboardChips();
+    }
+
+    function renderDashboardChips() {
+      const favContainer = document.getElementById('favoritesChips');
+      const recContainer = document.getElementById('recentChips');
+
+      favContainer.innerHTML = '';
+      if (!favoritesList.length) {
+        favContainer.innerHTML = '<span class="empty-chips-hint">Нажмите ★ на странице расписания, чтобы добавить группу или преподавателя в избранное.</span>';
+      } else {
+        favoritesList.forEach(item => {
+          const chip = document.createElement('div');
+          chip.className = 'chip-item';
+          chip.innerHTML = `<span>⭐</span> ${item.name}`;
+          chip.onclick = () => selectTarget(item.id, item.name, item.type);
+          favContainer.appendChild(chip);
+        });
+      }
+
+      recContainer.innerHTML = '';
+      if (!recentList.length) {
+        recContainer.innerHTML = '<span class="empty-chips-hint">Здесь будут отображаться недавно просмотренные расписания.</span>';
+      } else {
+        recentList.forEach(item => {
+          const chip = document.createElement('div');
+          chip.className = 'chip-item';
+          chip.innerHTML = `<span>🕒</span> ${item.name}`;
+          chip.onclick = () => selectTarget(item.id, item.name, item.type);
+          recContainer.appendChild(chip);
+        });
+      }
+    }
+
+    // ========================================================
+    // LIVE ТРЕКЕР И РАСПИСАНИЕ ЗВОНКОВ
+    // ========================================================
+    function updateLiveStatus() {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const s = now.getSeconds();
+      const timeStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) clockEl.innerText = timeStr;
+
+      const nowMin = h * 60 + m;
+      const statusTextEl = document.getElementById('liveStatusText');
+      const progressBarEl = document.getElementById('liveProgressBar');
+
+      let currentPairNum = null;
+      let currentBreakNextPair = null;
+      let progressPercent = 0;
+
+      // 1 пара начинается в 08:00 (480 мин), 8 пара заканчивается в 21:40 (1300 мин)
+      if (nowMin < 480) {
+        const diff = 480 - nowMin;
+        const diffH = Math.floor(diff / 60);
+        const diffM = diff % 60;
+        statusTextEl.innerText = `Занятия ещё не начались. 1 пара в 08:00 (через ${diffH > 0 ? diffH + ' ч ' : ''}${diffM} мин)`;
+        progressPercent = 0;
+      } else if (nowMin >= 1300) {
+        statusTextEl.innerText = 'Учебный день завершён 🌙';
+        progressPercent = 100;
+      } else {
+        // Проверяем пары и перемены
+        for (let p = 1; p <= 8; p++) {
+          const pStart = timeToMinutes(CALL_TIMES[p].start);
+          const pEnd = timeToMinutes(CALL_TIMES[p].end);
+
+          if (nowMin >= pStart && nowMin < pEnd) {
+            currentPairNum = p;
+            const left = pEnd - nowMin;
+            const total = pEnd - pStart;
+            progressPercent = Math.min(100, Math.max(0, ((nowMin - pStart) / total) * 100));
+            statusTextEl.innerHTML = `🟢 Идёт <strong>${p} пара</strong> (${CALL_TIMES[p].start} – ${CALL_TIMES[p].end}) • Осталось <strong>${left} мин</strong>`;
+            break;
+          }
+
+          if (p < 8) {
+            const nextStart = timeToMinutes(CALL_TIMES[p + 1].start);
+            if (nowMin >= pEnd && nowMin < nextStart) {
+              currentBreakNextPair = p + 1;
+              const left = nextStart - nowMin;
+              const total = nextStart - pEnd;
+              progressPercent = Math.min(100, Math.max(0, ((nowMin - pEnd) / total) * 100));
+              statusTextEl.innerHTML = `🟡 Перерыв: до <strong>${p + 1} пары</strong> (${CALL_TIMES[p + 1].start}) осталось <strong>${left} мин</strong>`;
+              break;
+            }
+          }
+        }
+      }
+
+      if (progressBarEl) {
+        progressBarEl.style.width = `${progressPercent}%`;
+      }
+
+      // Обновляем подсветку таблицы звонков
+      renderBellsTable(currentPairNum, currentBreakNextPair);
+    }
+
+    function renderBellsTable(activePairNum, activeBreakNextPair) {
+      const container = document.getElementById('bellsScheduleTable');
+      if (!container) return;
+
+      container.innerHTML = '';
+      for (let p = 1; p <= 8; p++) {
+        const row = document.createElement('div');
+        row.className = `bell-row ${activePairNum === p ? 'active-bell' : ''}`;
+        row.innerHTML = `
+          <span class="bell-num">${p} пара</span>
+          <span class="bell-hours">${CALL_TIMES[p].start} — ${CALL_TIMES[p].end}</span>
+          <span class="bell-tag">${activePairNum === p ? 'Идёт сейчас' : '90 мин'}</span>
+        `;
+        container.appendChild(row);
+
+        if (p < 8) {
+          const currEnd = timeToMinutes(CALL_TIMES[p].end);
+          const nextStart = timeToMinutes(CALL_TIMES[p + 1].start);
+          const diff = nextStart - currEnd;
+          const isBreakActive = activeBreakNextPair === (p + 1);
+
+          const breakDiv = document.createElement('div');
+          breakDiv.className = `bell-break ${isBreakActive ? 'active-break' : ''}`;
+          breakDiv.innerHTML = `${isBreakActive ? '🔔 Идёт перерыв: ' : ''}${diff === 30 ? 'Большой перерыв 30 мин' : `Перерыв ${diff} мин`}`;
+          container.appendChild(breakDiv);
+        }
+      }
+    }
+
+    // Переключение Главная / Расписание
+    function toggleMainView() {
+      if (currentView === 'home') {
+        if (currentTarget) {
+          showScheduleView();
+        } else {
+          openCatalog();
+        }
+      } else {
+        showHomeView();
+      }
+    }
+
+    function showHomeView() {
+      currentView = 'home';
+      document.getElementById('homeDashboard').style.display = 'flex';
+      document.getElementById('scheduleSection').style.display = 'none';
+      document.getElementById('groupTitle').innerText = 'Главная';
+      document.getElementById('viewToggleBtn').innerText = '📅 Расписание';
+      document.getElementById('viewToggleBtn').classList.remove('active-tab');
+      document.getElementById('statusText').innerText = 'Готово';
+      updateSubgroupUI();
+      updateFavBtnUI();
+      renderDashboardChips();
+      updateLiveStatus();
+    }
+
+    function showScheduleView() {
+      currentView = 'schedule';
+      document.getElementById('homeDashboard').style.display = 'none';
+      document.getElementById('scheduleSection').style.display = 'block';
+      document.getElementById('viewToggleBtn').innerText = '🏠 Главная';
+      document.getElementById('viewToggleBtn').classList.add('active-tab');
+      updateSubgroupUI();
+      updateFavBtnUI();
+      loadSchedule();
     }
 
     function setSubgroup(sg) {
@@ -1185,7 +1597,7 @@
 
     function updateSubgroupUI() {
       const toggleEl = document.getElementById('subgroupToggle');
-      if (currentTarget.type === 2) {
+      if (currentView === 'schedule' && currentTarget && currentTarget.type === 2) {
         toggleEl.style.display = 'inline-flex';
         document.querySelectorAll('.sg-btn').forEach(btn => {
           btn.classList.toggle('active', btn.getAttribute('data-sg') === selectedSubgroup);
@@ -1203,6 +1615,7 @@
     }
 
     function prefetchAdjacentWeeks() {
+      if (!currentTarget) return;
       [-1, 1].forEach(offset => {
         const d = new Date(currentMonday);
         d.setDate(d.getDate() + (offset * 7));
@@ -1223,11 +1636,17 @@
     }
 
     async function loadSchedule() {
+      if (!currentTarget) {
+        showHomeView();
+        return;
+      }
+
       const statusEl = document.getElementById('statusText');
       const container = document.getElementById('scheduleContainer');
       document.getElementById('groupTitle').innerText = currentTarget.name;
 
       updateSubgroupUI();
+      updateFavBtnUI();
 
       const dateStr = currentMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
       document.getElementById('currentWeekText').innerText = `С ${dateStr}`;
@@ -1334,7 +1753,6 @@
           activeDaysWithClasses.add(`${localDate.getFullYear()}-${localDate.getMonth()}-${localDate.getDate()}`);
         }
 
-        // Если это прошедший день текущей недели и они скрыты
         if (isPastDay && !showPastDaysForCurrentWeek) {
           hiddenPastDaysCount++;
           return;
@@ -1436,7 +1854,6 @@
         dayCardsToRender.push(card);
       });
 
-      // Кнопка управления показом прошедших дней на текущей неделе
       if (isViewingCurrentWeek) {
         if (hiddenPastDaysCount > 0) {
           const toggleBtn = document.createElement('button');
@@ -1716,8 +2133,9 @@
     function selectTarget(id, name, type) {
       currentTarget = { id, name, type };
       localStorage.setItem('savedTarget', JSON.stringify(currentTarget));
+      addToRecent(currentTarget);
       closeCatalog();
-      loadSchedule();
+      showScheduleView();
     }
 
     // Каталог
@@ -1977,8 +2395,10 @@
       }
     });
 
+    // Инициализация
     applyCurrentTheme();
-    loadSchedule();
+    showHomeView();
+    setInterval(updateLiveStatus, 1000);
 
     // Регистрация Service Worker для PWA
     if ('serviceWorker' in navigator) {
