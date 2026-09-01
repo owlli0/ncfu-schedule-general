@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- x.12-->
+  <!-- x.13 текущая дата -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
@@ -1046,7 +1046,7 @@
     let selectedSubgroup = localStorage.getItem('savedSubgroup') || 'all';
     let lastLoadedDays = null;
 
-    let currentMonday = getMonday(new Date(2026, 8, 7));
+    let currentMonday = getMonday(new Date());
     let calendarMonthDate = new Date(currentMonday);
     let activeDaysWithClasses = new Set();
 
