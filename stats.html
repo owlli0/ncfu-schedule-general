@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <!-- v. статистика -->
+  <!-- v.2 дизайн   -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +22,7 @@
 
   <style>
     /* ========================================================
-       ЭКРАН АВТОРИЗАЦИИ (С АВТОЗАПОЛНЕНИЕМ БРАУЗЕРА)
+       ЭКРАН АВТОРИЗАЦИИ
        ======================================================== */
     .login-wrapper {
       display: flex;
@@ -156,12 +156,30 @@
     }
     .btn-danger-outline:hover { background: rgba(239, 68, 68, 0.22); }
 
+    /* Стильная полоса прокрутки семестров под цвет интерфейса */
     .terms-scroller {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding-bottom: 4px;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
     }
+    .terms-scroller::-webkit-scrollbar {
+      height: 5px;
+    }
+    .terms-scroller::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 99px;
+    }
+    .terms-scroller::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 99px;
+    }
+    .terms-scroller::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
     .term-pill {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -248,13 +266,13 @@
     .subject-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
 
     .stat-pill {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 7px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
     .stat-pill-lec {
       background: var(--lecture-bg);
@@ -266,15 +284,37 @@
       border: 1px solid var(--practice-border);
       color: var(--practice-badge);
     }
-    .stat-pill-grade {
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      color: var(--accent);
-    }
     .stat-pill-miss {
       background: rgba(239, 68, 68, 0.14);
       border: 1px solid rgba(239, 68, 68, 0.35);
       color: #f87171;
+    }
+
+    /* Рамки сгруппированных оценок */
+    .grade-pill-5 {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid #10b981;
+      color: #34d399;
+    }
+    .grade-pill-4 {
+      background: rgba(249, 115, 22, 0.16);
+      border: 1px solid #f97316;
+      color: #fb923c;
+    }
+    .grade-pill-3 {
+      background: rgba(234, 179, 8, 0.16);
+      border: 1px solid #eab308;
+      color: #facc15;
+    }
+    .grade-pill-2 {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid #ef4444;
+      color: #f87171;
+    }
+    .grade-pill-other {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: var(--accent);
     }
 
     .att-progress-track {
@@ -299,8 +339,8 @@
       display: grid;
       grid-template-columns: 76px auto 1fr auto;
       align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
+      gap: 10px;
+      padding: 8px 12px;
       border-radius: 8px;
       font-size: 0.84rem;
       border-left: 3px solid transparent;
@@ -318,22 +358,21 @@
       border-left-color: var(--accent);
     }
     .j-date { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); font-size: 0.8rem; }
-    .j-type { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .j-type { font-size: 0.7rem; font-weight: 700; padding: 3px 7px; border-radius: 5px; text-transform: uppercase; white-space: nowrap; }
     .j-type-lec { background: var(--lecture-badge); color: #000; }
     .j-type-prac { background: var(--practice-badge); color: #000; }
     .j-type-other { background: rgba(255,255,255,0.2); color: var(--text); }
     .j-theme { color: var(--text-muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .j-status { display: flex; align-items: center; gap: 6px; font-weight: 700; justify-content: flex-end; }
 
-    .att-tag-ok { color: #34d399; font-size: 0.78rem; }
+    .att-tag-ok { color: #34d399; font-size: 0.82rem; }
     .att-tag-miss { background: #ef4444; color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 0.74rem; }
     .att-tag-excused { background: #eab308; color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.74rem; }
     .grade-chip { background: var(--accent); color: #000; padding: 2px 7px; border-radius: 5px; font-size: 0.76rem; font-weight: 700; }
     .score-chip { color: #34d399; font-size: 0.76rem; font-weight: 700; }
 
     @media (max-width: 650px) {
-      .journal-row { grid-template-columns: 68px auto 1fr; }
-      .j-status { grid-column: 1 / -1; justify-content: flex-start; }
+      .journal-row { grid-template-columns: 68px auto 1fr auto; gap: 6px; padding: 7px 9px; }
     }
   </style>
 </head>
@@ -354,7 +393,7 @@
       </div>
     </header>
 
-    <!-- ЭКРАН ВХОДА (ПОКАЗЫВАЕТСЯ ЕСЛИ НЕТ СЕССИИ) -->
+    <!-- ЭКРАН ВХОДА -->
     <div id="loginSection" class="login-wrapper" style="display: none;">
       <div class="login-card">
         <div>
@@ -418,7 +457,7 @@
       </div>
     </div>
 
-    <!-- ЭКРАН СТАТИСТИКИ (ПОКАЗЫВАЕТСЯ ПОСЛЕ ВХОДА) -->
+    <!-- ЭКРАН СТАТИСТИКИ -->
     <div id="dashboardSection" style="display: none;">
       <div class="student-banner">
         <div class="student-info-main">
@@ -537,6 +576,7 @@
       terms: [],
       selectedTermId: null,
       coursesWithLessons: [],
+      termsCache: {},
       filter: 'all',
       allExpanded: false
     };
@@ -601,7 +641,6 @@
         const data = await res.json();
         if (data.ok && data.cookie) {
           localStorage.setItem('ecampusCookie', data.cookie);
-          // Сообщаем Credential Management API браузера, чтобы он предложил сохранить логин/пароль
           if (window.PasswordCredential) {
             try {
               const cred = new PasswordCredential({ id: login, password: password, name: login });
@@ -630,6 +669,7 @@
       localStorage.removeItem('ecampusCookie');
       localStorage.removeItem('cache_studies_snapshot');
       studiesData.coursesWithLessons = [];
+      studiesData.termsCache = {};
       showToast('Вы вышли из аккаунта eCampus');
       showLoginScreen();
     }
@@ -645,10 +685,10 @@
       const statusEl = document.getElementById('statusText');
       const container = document.getElementById('subjectsContainer');
 
-      // Мгновенно отрисовываем сохранённый кэш, если есть
       const cachedSnapshot = getCache('studies_snapshot', true);
       if (cachedSnapshot) {
         studiesData = { ...studiesData, ...cachedSnapshot };
+        if (!studiesData.termsCache) studiesData.termsCache = {};
         renderStudiesUI();
         if (!forceRefresh) {
           statusEl.innerText = navigator.onLine ? 'Актуально (кэш)' : 'Офлайн (сохранено)';
@@ -712,9 +752,9 @@
         studiesData.selectedTermId = currentTermId;
 
         if (initialCourses.length > 0) {
-          await loadCoursesLessonsDetails(initialCourses);
+          await loadCoursesLessonsDetails(initialCourses, currentTermId);
         } else if (currentTermId) {
-          await selectStudyTerm(currentTermId);
+          await selectStudyTerm(currentTermId, true);
         }
       } catch (err) {
         statusEl.innerText = cachedSnapshot ? 'Офлайн (сохранено)' : 'Ошибка';
@@ -724,7 +764,7 @@
       }
     }
 
-    async function selectStudyTerm(termId) {
+    async function selectStudyTerm(termId, forceNetwork = false) {
       const cookie = localStorage.getItem('ecampusCookie');
       if (!cookie) return showLoginScreen();
 
@@ -733,6 +773,15 @@
 
       const statusEl = document.getElementById('statusText');
       const container = document.getElementById('subjectsContainer');
+
+      // Если этот семестр уже загружен в рамках сессии — открываем мгновенно
+      if (!forceNetwork && studiesData.termsCache && studiesData.termsCache[termId]) {
+        studiesData.coursesWithLessons = studiesData.termsCache[termId];
+        statusEl.innerText = 'Актуально';
+        renderStudiesUI();
+        return;
+      }
+
       statusEl.innerText = 'Загрузка семестра...';
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 30px;">Загрузка дисциплин семестра...</div>';
 
@@ -740,21 +789,38 @@
         const res = await fetch(`${WORKER_BASE}/api/courses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Ecampus-Cookie': cookie },
-          body: JSON.stringify({ studentId: studiesData.studentId, termId })
+          body: JSON.stringify({ studentId: studiesData.studentId, termId: Number(termId) })
         });
+
         if (res.status === 401) {
           localStorage.removeItem('ecampusCookie');
           return showLoginScreen();
         }
+
         const data = await res.json();
-        await loadCoursesLessonsDetails(data.courses || []);
+        if (!data.ok) {
+          throw new Error(data.error || 'Ошибка получения списка дисциплин');
+        }
+
+        const courses = Array.isArray(data.courses) ? data.courses : [];
+        if (courses.length === 0) {
+          studiesData.coursesWithLessons = [];
+          if (!studiesData.termsCache) studiesData.termsCache = {};
+          studiesData.termsCache[termId] = [];
+          statusEl.innerText = 'Нет дисциплин';
+          renderKpiSummary();
+          container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 24px;">Дисциплины на этот семестр ещё не назначены в eCampus</div>';
+          return;
+        }
+
+        await loadCoursesLessonsDetails(courses, termId);
       } catch (err) {
         statusEl.innerText = 'Ошибка';
-        container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить дисциплины семестра</div>';
+        container.innerHTML = `<div class="empty-day" style="color:#ef4444; text-align:center;">${err.message}</div>`;
       }
     }
 
-    async function loadCoursesLessonsDetails(courses) {
+    async function loadCoursesLessonsDetails(courses, termId) {
       const cookie = localStorage.getItem('ecampusCookie');
       const statusEl = document.getElementById('statusText');
       const container = document.getElementById('subjectsContainer');
@@ -805,13 +871,17 @@
       }));
 
       studiesData.coursesWithLessons = enrichedCourses;
+      if (!studiesData.termsCache) studiesData.termsCache = {};
+      if (termId) studiesData.termsCache[termId] = enrichedCourses;
+
       setCache('studies_snapshot', {
         studentName: studiesData.studentName,
         specialityName: studiesData.specialityName,
         studentId: studiesData.studentId,
         terms: studiesData.terms,
         selectedTermId: studiesData.selectedTermId,
-        coursesWithLessons: enrichedCourses
+        coursesWithLessons: enrichedCourses,
+        termsCache: studiesData.termsCache
       });
 
       statusEl.innerText = 'Актуально';
@@ -901,6 +971,44 @@
       document.getElementById('kpiScoreSub').innerText = totalGainedScore > 0 ? 'Сумма набранных баллов' : 'Баллы не выставлялись';
     }
 
+    // Группировка оценок по номиналу для шапки дисциплины
+    function buildGroupedGradesHtml(lessons) {
+      let count5 = 0, count4 = 0, count3 = 0, count2 = 0;
+      const otherGrades = [];
+
+      lessons.forEach(l => {
+        const raw = (l.GradeText && l.GradeText.trim())
+          ? l.GradeText.trim().toLowerCase()
+          : (l.Grade > 0 ? String(l.Grade) : '');
+        if (!raw) return;
+
+        if (raw === '5' || raw.includes('отл')) count5++;
+        else if (raw === '4' || raw.includes('хор')) count4++;
+        else if (raw === '3' || raw.includes('удов')) count3++;
+        else if (raw === '2' || raw.includes('неуд')) count2++;
+        else otherGrades.push(l.GradeText ? l.GradeText.trim() : String(l.Grade));
+      });
+
+      const badges = [];
+      if (count5 > 0) {
+        badges.push(`<span class="stat-pill grade-pill-5" title="Пятёрок: ${count5}">★ ${count5}</span>`);
+      }
+      if (count4 > 0) {
+        badges.push(`<span class="stat-pill grade-pill-4" title="Четвёрок: ${count4}">■ ${count4}</span>`);
+      }
+      if (count3 > 0) {
+        badges.push(`<span class="stat-pill grade-pill-3" title="Троек: ${count3}">▲ ${count3}</span>`);
+      }
+      if (count2 > 0) {
+        badges.push(`<span class="stat-pill grade-pill-2" title="Двоек: ${count2}">неуд. ${count2}</span>`);
+      }
+      otherGrades.forEach(g => {
+        badges.push(`<span class="stat-pill grade-pill-other">${g}</span>`);
+      });
+
+      return badges.join('');
+    }
+
     function renderSubjectsList() {
       const container = document.getElementById('subjectsContainer');
       container.innerHTML = '';
@@ -932,12 +1040,8 @@
 
         const lecStats = countStats(lecList);
         const pracStats = countStats(pracList);
-
-        const grades = course.lessons
-          .filter(l => (l.GradeText && l.GradeText.trim()) || l.Grade > 0)
-          .map(l => l.GradeText ? l.GradeText.trim() : String(l.Grade));
-
         const totalMisses = lecStats.miss + pracStats.miss;
+        const groupedGradesHtml = buildGroupedGradesHtml(course.lessons);
 
         let filteredLessons = course.lessons;
         if (studiesData.filter === 'lec') filteredLessons = course.lessons.filter(l => l._category === 'lec');
@@ -981,11 +1085,16 @@
               const gradeHtml = gradeStr ? `<span class="grade-chip">${gradeStr}</span>` : '';
               const scoreHtml = l.GainedScore > 0 ? `<span class="score-chip">+${l.GainedScore}</span>` : '';
 
+              // Показываем тему только если преподаватель её реально указал (без повторения "Лекция" / "Практическое занятие")
+              const cleanTheme = (l.Theme && l.Theme.trim() && l.Theme.trim().toLowerCase() !== l._typeName.toLowerCase())
+                ? l.Theme.trim()
+                : '';
+
               return `
                 <div class="journal-row ${rowClass}">
                   <span class="j-date">${dStr}${l.IsCheckpoint ? ' 🎯' : ''}</span>
                   <span class="j-type ${typeBadgeClass}">${shortType}</span>
-                  <span class="j-theme">${l.Theme || l._typeName}</span>
+                  <span class="j-theme">${cleanTheme}</span>
                   <div class="j-status">${gradeHtml}${scoreHtml}${attHtml}</div>
                 </div>
               `;
@@ -1003,8 +1112,8 @@
                 ${lecList.length ? `<span class="stat-pill stat-pill-lec">🟢 Лекции: ${lecStats.ok}/${lecStats.past} (всего ${lecStats.total})</span>` : ''}
                 ${pracList.length ? `<span class="stat-pill stat-pill-prac">🟠 Практики: ${pracStats.ok}/${pracStats.past} (всего ${pracStats.total})</span>` : ''}
                 ${totalMisses > 0 ? `<span class="stat-pill stat-pill-miss">Пропусков: ${totalMisses}</span>` : ''}
-                ${grades.map(g => `<span class="stat-pill stat-pill-grade">⭐ ${g}</span>`).join('')}
-                ${course.maxRating > 0 ? `<span class="stat-pill stat-pill-grade">Рейтинг: ${course.currentRating}/${course.maxRating}</span>` : ''}
+                ${groupedGradesHtml}
+                ${course.maxRating > 0 ? `<span class="stat-pill grade-pill-other">Рейтинг: ${course.currentRating}/${course.maxRating}</span>` : ''}
               </div>
             </div>
             <span style="color:var(--text-muted); font-size:0.85rem; padding-top:2px;">${course.expanded ? '▲' : '▼'}</span>
