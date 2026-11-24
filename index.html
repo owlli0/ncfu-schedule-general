@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
+  <!-- v.18 статистика  -->
 <head>
-  <!-- x.16 кнопки корпуса -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание СКФУ</title>
   
-  <!-- PWA параметры -->
   <link rel="manifest" href="manifest.json">
+  <link rel="prefetch" href="stats.html">
   <meta name="theme-color" content="#0b0f19">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,65 +18,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <script src="common.js"></script>
+
   <style>
-    :root {
-      --bg: #0b0f19;
-      --card-bg: #151d30;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.08);
-      --accent: #38bdf8;
-      
-      --lecture-bg: rgba(16, 185, 129, 0.15);
-      --lecture-border: rgba(16, 185, 129, 0.45);
-      --lecture-badge: #10b981;
-      
-      --practice-bg: rgba(245, 158, 11, 0.15);
-      --practice-border: rgba(245, 158, 11, 0.45);
-      --practice-badge: #f59e0b;
-
-      --default-bg: rgba(255, 255, 255, 0.05);
-      --default-border: var(--border);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 16px 12px;
-      display: flex;
-      justify-content: center;
-      transition: background-color 0.2s, color 0.2s;
-    }
-
-    .container { width: 100%; max-width: 880px; }
-
-    header {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .header-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
-    .status-text { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
-
     .fav-star-btn {
       background: none;
       border: none;
@@ -113,34 +58,6 @@
     .sg-btn.active {
       background: var(--accent);
       color: #000;
-      font-weight: 700;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .action-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 0.88rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .action-btn:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
-    .action-btn.active-tab {
-      background: var(--accent);
-      color: #000;
-      border-color: var(--accent);
       font-weight: 700;
     }
 
@@ -213,9 +130,7 @@
     .autocomplete-item:hover { background: rgba(255,255,255,0.06); color: var(--accent); }
     .autocomplete-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-    /* ========================================================
-       ГЛАВНЫЙ ЭКРАН (ДАШБОРД)
-       ======================================================== */
+    /* ГЛАВНЫЙ ЭКРАН */
     #homeDashboard {
       display: flex;
       flex-direction: column;
@@ -418,9 +333,7 @@
     .bell-break { text-align: center; font-size: 0.76rem; color: var(--text-muted); padding: 4px 0; font-weight: 500; }
     .bell-break.active-break { color: var(--practice-badge); font-weight: 700; }
 
-    /* ========================================================
-       ЭКРАН РАСПИСАНИЯ
-       ======================================================== */
+    /* ЭКРАН РАСПИСАНИЯ */
     .week-nav-bar {
       display: flex;
       align-items: center;
@@ -433,20 +346,6 @@
       gap: 8px;
       position: relative;
     }
-
-    .nav-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-    .nav-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
 
     .date-btn {
       display: flex;
@@ -577,7 +476,6 @@
       margin: 0 10px;
     }
 
-    /* Карточка пары */
     .lesson-item {
       display: grid;
       grid-template-columns: 85px 1fr auto 34px;
@@ -608,7 +506,6 @@
     .badge-def { background: rgba(255,255,255,0.2); color: var(--text); }
     .subgroup-tag { background: rgba(255, 255, 255, 0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
 
-    /* Кликабельная плашка группы */
     .group-click-tag {
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid var(--border);
@@ -632,7 +529,6 @@
       transform: translateY(-1px);
     }
 
-    /* Кнопка аудитории */
     .room-tag {
       font-weight: 600;
       color: var(--accent);
@@ -655,7 +551,6 @@
     .room-tag-remote { color: #38bdf8; background: rgba(56, 189, 248, 0.18); border-color: rgba(56, 189, 248, 0.45); }
     .room-tag .room-arrow { font-size: 0.72rem; opacity: 0.85; }
 
-    /* Преподаватель */
     .teacher-block {
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -668,7 +563,6 @@
     }
     .teacher-block:hover { color: var(--accent); text-decoration: underline; }
 
-    /* Кнопка с тремя точками */
     .lesson-dots-btn {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
@@ -689,8 +583,6 @@
       border-color: var(--accent);
     }
 
-    .empty-day { color: var(--text-muted); font-style: italic; font-size: 0.9rem; padding: 10px 0; }
-
     /* Меню выбора карт */
     .map-sheet-overlay {
       position: fixed;
@@ -701,10 +593,7 @@
       display: none;
       align-items: flex-end;
       justify-content: center;
-      animation: fadeIn 0.15s ease-out;
     }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .map-sheet-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -716,10 +605,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
     .map-sheet-title { font-size: 1.05rem; font-weight: 700; color: var(--text); line-height: 1.3; }
     .map-sheet-subtitle { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
     .map-sheet-options { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
@@ -761,34 +647,6 @@
       .map-sheet-card { border-radius: 18px; padding: 22px; }
     }
 
-    /* Модальные окна */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
-      z-index: 100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .modal-content {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 650px;
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      color: var(--text);
-    }
-    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h2 { font-size: 1.15rem; color: var(--text); }
-    .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
-    .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
     .catalog-list { display: flex; flex-direction: column; gap: 6px; }
     .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 6px; margin-bottom: 14px; }
     .catalog-item {
@@ -806,98 +664,14 @@
     .catalog-item:hover { background: rgba(56, 189, 248, 0.12); border-color: var(--accent); }
     .catalog-breadcrumbs { font-size: 0.85rem; color: var(--accent); margin-bottom: 12px; cursor: pointer; display: inline-block; }
 
-    .theme-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
-    .preset-btn {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.05);
-      color: var(--text);
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      text-align: center;
-    }
-    .preset-btn:hover { border-color: var(--accent); }
-    .custom-colors-grid { display: flex; flex-direction: column; gap: 12px; }
-    .color-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
-    .color-input-wrap { display: flex; align-items: center; gap: 8px; }
-    .color-picker {
-      -webkit-appearance: none;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      cursor: pointer;
-      background: transparent;
-    }
-    .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-    .color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 8px; }
-
-    /* Всплывающий тост */
-    .toast-notice {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #1e293b;
-      color: #f1f5f9;
-      border: 1px solid var(--accent);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      z-index: 200;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      max-width: 90vw;
-      text-align: center;
-      line-height: 1.4;
-    }
-    .toast-notice.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* Мобильный дизайн */
     @media (max-width: 650px) {
-      body { padding: 0 8px 24px 8px; }
-      header {
-        position: sticky;
-        top: 0;
-        z-index: 45;
-        background: var(--bg);
-        padding: 8px 4px 10px 4px;
-        margin-bottom: 8px;
-        border-bottom: 1px solid var(--border);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-        gap: 8px;
-      }
-      .header-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-      .header-title-wrap { gap: 6px; max-width: 65vw; }
-      h1 {
-        font-size: 1.05rem;
-        letter-spacing: -0.01em;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 42vw;
-        text-align: left;
-      }
       .subgroup-toggle { padding: 1px; gap: 1px; }
       .sg-btn { padding: 3px 6px; font-size: 0.7rem; }
-      .header-actions { gap: 6px; }
-      .action-btn { padding: 5px 8px; font-size: 0.78rem; border-radius: 8px; }
-      .status-text { font-size: 0.72rem; }
       .search-row { display: flex; flex-direction: row; gap: 6px; }
       .search-input { padding: 8px 10px; font-size: 0.85rem; border-radius: 8px; }
       .catalog-btn { padding: 8px 10px; font-size: 0.8rem; border-radius: 8px; }
       .campus-cards-grid { grid-template-columns: 1fr; }
       .week-nav-bar { padding: 5px 6px; margin-bottom: 8px; gap: 4px; border-radius: 10px; }
-      .nav-btn { padding: 6px 8px; font-size: 0.78rem; border-radius: 6px; }
       .date-btn { padding: 6px 8px; font-size: 0.8rem; border-radius: 6px; gap: 4px; }
       .custom-calendar-popup { width: 94vw; max-width: 320px; left: 50%; transform: translateX(-50%); padding: 10px; }
       .day-card { padding: 10px 10px; margin-bottom: 12px; border-radius: 12px; }
@@ -911,7 +685,7 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 4px;
-        padding: 9px 10px 9px 10px;
+        padding: 9px 10px;
         border-radius: 9px;
         margin-bottom: 6px;
         text-align: left;
@@ -934,8 +708,6 @@
         margin-top: 3px;
         padding-top: 2px;
         white-space: normal;
-        overflow: visible;
-        text-overflow: unset;
         max-width: 100%;
         line-height: 1.25;
       }
@@ -948,10 +720,6 @@
         font-size: 1.15rem;
       }
       .groups-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 5px; }
-      .modal-content { max-height: 90vh; border-radius: 12px; }
-      .modal-header { padding: 10px 14px; }
-      .modal-header h2 { font-size: 0.98rem; }
-      .modal-body { padding: 10px 12px; }
     }
   </style>
 </head>
@@ -972,7 +740,8 @@
         </div>
 
         <div class="header-actions">
-          <button id="viewToggleBtn" class="action-btn" onclick="toggleMainView()">🏠 Главная</button>
+          <a id="cabinetLinkBtn" href="stats.html" class="action-btn">🔐 Войти</a>
+          <button id="viewToggleBtn" class="action-btn" onclick="toggleMainView()">📅 Расписание</button>
           <button class="action-btn" onclick="openThemeModal()">🎨 Тема</button>
           <div id="statusText" class="status-text">Готово</div>
         </div>
@@ -1016,7 +785,6 @@
         <div id="recentChips" class="chips-grid"></div>
       </div>
 
-      <!-- Раскрывающийся навигатор по всем корпусам -->
       <div class="dashboard-section">
         <div class="campus-accordion-header" onclick="toggleCampusList()">
           <div class="section-title" style="margin-bottom: 0;">📍 Корпуса и кампусы СКФУ</div>
@@ -1148,7 +916,6 @@
 
   <script>
     const API_BASE = 'https://ecampus.ncfu.ru/schedule';
-    const WORKER_PROXY_URL = 'https://morning-cloud-895b.balavensydbu.workers.dev/?url=';
 
     const PROXY_PROVIDERS = [
       (url) => `${WORKER_PROXY_URL}${encodeURIComponent(url)}`,
@@ -1227,22 +994,8 @@
     }
 
     function showRemoteNotice(typeText, e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       showToast(`💻 Занятие проходит дистанционно (${typeText}). Ссылку на подключение уточняйте у старосты или преподавателя.`);
-    }
-
-    let toastTimer = null;
-    function showToast(text) {
-      const el = document.getElementById('toastNotice');
-      el.innerText = text;
-      el.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        el.classList.remove('show');
-      }, 3500);
     }
 
     const INSTITUTES = [
@@ -1265,58 +1018,6 @@
       { Id: null, ShortName: "НТИ СКФУ", BranchId: 4, Name: "Невинномысский технологический институт (филиал)" },
       { Id: null, ShortName: "ПИ СКФУ", BranchId: 2, Name: "Пятигорский институт (филиал)" }
     ];
-
-    // ========================================================
-    // НАДЁЖНЫЙ КЭШ: 24 ЧАСА (1 ДЕНЬ) + ВЕЧНЫЙ ОФЛАЙН-РЕЖИМ
-    // ========================================================
-    const MEMORY_CACHE = {};
-    const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 часа
-
-    function getCache(key, ignoreExpiry = false) {
-      if (MEMORY_CACHE[key]) {
-        if (!MEMORY_CACHE[key].isExpired || ignoreExpiry) {
-          return MEMORY_CACHE[key].data;
-        }
-      }
-      try {
-        const stored = localStorage.getItem('cache_' + key);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          const age = Date.now() - (parsed.ts || 0);
-          const isExpired = age >= CACHE_TTL_MS;
-          MEMORY_CACHE[key] = { data: parsed.data, isExpired, ts: parsed.ts };
-          
-          if (!isExpired || ignoreExpiry) {
-            return parsed.data;
-          }
-        }
-      } catch (e) {}
-      return null;
-    }
-
-    function getCacheInfo(key) {
-      try {
-        const stored = localStorage.getItem('cache_' + key);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          const age = Date.now() - (parsed.ts || 0);
-          return {
-            exists: true,
-            isExpired: age >= CACHE_TTL_MS,
-            date: new Date(parsed.ts)
-          };
-        }
-      } catch (e) {}
-      return { exists: false, isExpired: true, date: null };
-    }
-
-    function setCache(key, data) {
-      if (!data || (Array.isArray(data) && data.length === 0)) return;
-      MEMORY_CACHE[key] = { data: data, isExpired: false, ts: Date.now() };
-      try {
-        localStorage.setItem('cache_' + key, JSON.stringify({ ts: Date.now(), data }));
-      } catch (e) {}
-    }
 
     let currentView = 'home';
     let currentTarget = JSON.parse(localStorage.getItem('savedTarget')) || null;
@@ -1398,15 +1099,10 @@
       let s = raw.trim();
       if (s.includes('-')) return s.toUpperCase().replace(/\s+/g, '');
       const clean = s.replace(/[\s_]+/g, '');
-      
       const m1 = clean.match(/^([а-яёa-z]{2,8}?)(б|м|с|а)(оз|зо|о|з)(\d{2})(\d*)$/i);
-      if (m1) {
-        return `${m1[1].toUpperCase()}-${m1[2].toLowerCase()}-${m1[3].toLowerCase()}-${m1[4]}${m1[5] ? '-' + m1[5] : ''}`;
-      }
+      if (m1) return `${m1[1].toUpperCase()}-${m1[2].toLowerCase()}-${m1[3].toLowerCase()}-${m1[4]}${m1[5] ? '-' + m1[5] : ''}`;
       const m2 = clean.match(/^([а-яёa-z]{2,8}?)(\d{2})(\d+)$/i);
-      if (m2) {
-        return `${m2[1].toUpperCase()}-${m2[2]}-${m2[3]}`;
-      }
+      if (m2) return `${m2[1].toUpperCase()}-${m2[2]}-${m2[3]}`;
       return s;
     }
 
@@ -1492,14 +1188,10 @@
     function renderCampusList() {
       const container = document.getElementById('campusList');
       if (!container) return;
-
       container.innerHTML = '';
-      const allCampusKeys = Object.keys(CAMPUS_DATA);
-
-      allCampusKeys.forEach(k => {
+      Object.keys(CAMPUS_DATA).forEach(k => {
         const item = CAMPUS_DATA[k];
         if (!item) return;
-
         const card = document.createElement('div');
         card.className = 'campus-card';
         card.innerHTML = `
@@ -1509,12 +1201,8 @@
           <div class="campus-address">${item.address}</div>
           <div class="campus-desc">${item.desc}</div>
           <div class="campus-actions">
-            <a href="${getBuilding2GisUrl(k)}" target="_blank" rel="noopener noreferrer" class="map-btn map-btn-2gis">
-              🟢 2ГИС
-            </a>
-            <a href="${getBuildingGoogleUrl(k)}" target="_blank" rel="noopener noreferrer" class="map-btn map-btn-google">
-              🔵 Google Карты
-            </a>
+            <a href="${getBuilding2GisUrl(k)}" target="_blank" rel="noopener noreferrer" class="map-btn map-btn-2gis">🟢 2ГИС</a>
+            <a href="${getBuildingGoogleUrl(k)}" target="_blank" rel="noopener noreferrer" class="map-btn map-btn-google">🔵 Google Карты</a>
           </div>
         `;
         container.appendChild(card);
@@ -1523,11 +1211,8 @@
 
     function updateLiveStatus() {
       const now = new Date();
-      const h = now.getHours();
-      const m = now.getMinutes();
-      const s = now.getSeconds();
+      const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
       const timeStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      
       const clockEl = document.getElementById('liveClock');
       if (clockEl) clockEl.innerText = timeStr;
 
@@ -1535,16 +1220,12 @@
       const statusTextEl = document.getElementById('liveStatusText');
       const progressBarEl = document.getElementById('liveProgressBar');
 
-      let currentPairNum = null;
-      let currentBreakNextPair = null;
-      let progressPercent = 0;
+      let currentPairNum = null, currentBreakNextPair = null, progressPercent = 0;
 
       if (nowMin < 480) {
         const diff = 480 - nowMin;
-        const diffH = Math.floor(diff / 60);
-        const diffM = diff % 60;
+        const diffH = Math.floor(diff / 60), diffM = diff % 60;
         statusTextEl.innerText = `Занятия ещё не начались. 1 пара в 08:00 (через ${diffH > 0 ? diffH + ' ч ' : ''}${diffM} мин)`;
-        progressPercent = 0;
       } else if (nowMin >= 1300) {
         statusTextEl.innerText = 'Учебный день завершён 🌙';
         progressPercent = 100;
@@ -1552,22 +1233,18 @@
         for (let p = 1; p <= 8; p++) {
           const pStart = timeToMinutes(CALL_TIMES[p].start);
           const pEnd = timeToMinutes(CALL_TIMES[p].end);
-
           if (nowMin >= pStart && nowMin < pEnd) {
             currentPairNum = p;
-            const left = pEnd - nowMin;
-            const total = pEnd - pStart;
+            const left = pEnd - nowMin, total = pEnd - pStart;
             progressPercent = Math.min(100, Math.max(0, ((nowMin - pStart) / total) * 100));
             statusTextEl.innerHTML = `🟢 Идёт <strong>${p} пара</strong> (${CALL_TIMES[p].start} – ${CALL_TIMES[p].end}) • Осталось <strong>${left} мин</strong>`;
             break;
           }
-
           if (p < 8) {
             const nextStart = timeToMinutes(CALL_TIMES[p + 1].start);
             if (nowMin >= pEnd && nowMin < nextStart) {
               currentBreakNextPair = p + 1;
-              const left = nextStart - nowMin;
-              const total = nextStart - pEnd;
+              const left = nextStart - nowMin, total = nextStart - pEnd;
               progressPercent = Math.min(100, Math.max(0, ((nowMin - pEnd) / total) * 100));
               statusTextEl.innerHTML = `🟡 Перерыв: до <strong>${p + 1} пары</strong> (${CALL_TIMES[p + 1].start}) осталось <strong>${left} мин</strong>`;
               break;
@@ -1575,7 +1252,6 @@
           }
         }
       }
-
       if (progressBarEl) progressBarEl.style.width = `${progressPercent}%`;
       renderBellsTable(currentPairNum, currentBreakNextPair);
     }
@@ -1583,7 +1259,6 @@
     function renderBellsTable(activePairNum, activeBreakNextPair) {
       const container = document.getElementById('bellsScheduleTable');
       if (!container) return;
-
       container.innerHTML = '';
       for (let p = 1; p <= 8; p++) {
         const row = document.createElement('div');
@@ -1594,13 +1269,9 @@
           <span class="bell-tag">${activePairNum === p ? 'Идёт сейчас' : '90 мин'}</span>
         `;
         container.appendChild(row);
-
         if (p < 8) {
-          const currEnd = timeToMinutes(CALL_TIMES[p].end);
-          const nextStart = timeToMinutes(CALL_TIMES[p + 1].start);
-          const diff = nextStart - currEnd;
+          const diff = timeToMinutes(CALL_TIMES[p + 1].start) - timeToMinutes(CALL_TIMES[p].end);
           const isBreakActive = activeBreakNextPair === (p + 1);
-
           const breakDiv = document.createElement('div');
           breakDiv.className = `bell-break ${isBreakActive ? 'active-break' : ''}`;
           breakDiv.innerHTML = `${isBreakActive ? '🔔 Идёт перерыв: ' : ''}${diff === 30 ? 'Большой перерыв 30 мин' : `Перерыв ${diff} мин`}`;
@@ -1609,13 +1280,21 @@
       }
     }
 
+    function updateCabinetButton() {
+      const btn = document.getElementById('cabinetLinkBtn');
+      if (localStorage.getItem('ecampusCookie')) {
+        btn.innerText = '📊 Кабинет';
+        btn.classList.add('auth-logged');
+      } else {
+        btn.innerText = '🔐 Войти';
+        btn.classList.remove('auth-logged');
+      }
+    }
+
     function toggleMainView() {
       if (currentView === 'home') {
-        if (currentTarget) {
-          showScheduleView(true);
-        } else {
-          openCatalog();
-        }
+        if (currentTarget) showScheduleView(true);
+        else openCatalog();
       } else {
         showHomeView(true);
       }
@@ -1623,9 +1302,7 @@
 
     function showHomeView(pushHistory = false) {
       currentView = 'home';
-      if (pushHistory) {
-        history.pushState({ view: 'home' }, '', window.location.pathname);
-      }
+      if (pushHistory) history.pushState({ view: 'home' }, '', window.location.pathname);
       document.getElementById('homeDashboard').style.display = 'flex';
       document.getElementById('scheduleSection').style.display = 'none';
       document.getElementById('groupTitle').innerText = 'Главная';
@@ -1642,11 +1319,7 @@
     function showScheduleView(pushHistory = true) {
       currentView = 'schedule';
       if (pushHistory) {
-        history.pushState({
-          view: 'schedule',
-          target: currentTarget,
-          date: currentMonday.toISOString()
-        }, '', '#schedule');
+        history.pushState({ view: 'schedule', target: currentTarget, date: currentMonday.toISOString() }, '', '#schedule');
       }
       document.getElementById('homeDashboard').style.display = 'none';
       document.getElementById('scheduleSection').style.display = 'block';
@@ -1707,29 +1380,17 @@
           fetchWithProxy(`${API_BASE}/GetSchedule`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              date: iso,
-              Id: currentTarget.id,
-              targetType: currentTarget.type
-            })
+            body: JSON.stringify({ date: iso, Id: currentTarget.id, targetType: currentTarget.type })
           }).then(r => r.json()).then(data => setCache(cacheKey, data)).catch(() => {});
         }
       });
     }
 
-    // ========================================================
-    // ЗАГРУЗКА РАСПИСАНИЯ: STALE-WHILE-REVALIDATE (РАЗ В ДЕНЬ)
-    // ========================================================
     async function loadSchedule(forceRefresh = false) {
-      if (!currentTarget) {
-        showHomeView(false);
-        return;
-      }
-
+      if (!currentTarget) { showHomeView(false); return; }
       const statusEl = document.getElementById('statusText');
       const container = document.getElementById('scheduleContainer');
       document.getElementById('groupTitle').innerText = currentTarget.name;
-
       updateSubgroupUI();
       updateFavBtnUI();
 
@@ -1738,47 +1399,33 @@
       
       const isoDate = currentMonday.toISOString();
       const cacheKey = `sched_${currentTarget.type}_${currentTarget.id}_${isoDate}`;
-
       const cacheInfo = getCacheInfo(cacheKey);
-      const cachedData = getCache(cacheKey, true); // читаем кэш всегда (даже если прошёл день)
+      const cachedData = getCache(cacheKey, true);
 
-      // 1. Если расписание уже есть в кэше — отрисовываем его МГНОВЕННО
       if (cachedData) {
         lastLoadedDays = cachedData;
         renderSchedule(cachedData);
-
-        // Если кэшу меньше 24 часов и не нажата принудительная кнопка — в сеть не лезем вообще
         if (!cacheInfo.isExpired && !forceRefresh) {
           statusEl.innerText = 'Актуально (кэш)';
           prefetchAdjacentWeeks();
           return;
         }
-
-        // Если кэш старше 24 часов, но интернета нет — остаёмся на сохранённом
         if (!navigator.onLine) {
           statusEl.innerText = 'Офлайн (сохранено)';
           return;
         }
-
         statusEl.innerText = 'Проверка обновлений...';
       } else {
-        // Кэша ещё вообще нет — показываем индикатор загрузки
         statusEl.innerText = 'Загрузка...';
         container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 40px 0;">Загрузка расписания...</div>';
       }
 
-      // 2. Фоновый запрос за свежими данными раз в сутки
       try {
         const response = await fetchWithProxy(`${API_BASE}/GetSchedule`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            date: isoDate,
-            Id: currentTarget.id,
-            targetType: currentTarget.type
-          })
+          body: JSON.stringify({ date: isoDate, Id: currentTarget.id, targetType: currentTarget.type })
         });
-
         const data = await response.json();
         setCache(cacheKey, data);
         statusEl.innerText = 'Актуально';
@@ -1786,22 +1433,17 @@
         renderSchedule(data);
         prefetchAdjacentWeeks();
       } catch (err) {
-        // Если сеть оборвалась, но у нас был старый кэш — расписание НЕ ПРОПАДАЕТ!
         if (cachedData) {
           statusEl.innerText = 'Офлайн (сохранено)';
         } else {
           statusEl.innerText = 'Ошибка сети';
-          container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные из сети. Подключите интернет для первого сохранения расписания.</div>';
+          container.innerHTML = '<div class="empty-day" style="color:#ef4444; text-align:center;">Не удалось загрузить данные из сети.</div>';
         }
       }
     }
 
     function openMapSheet(audName, roomFormatted, isRemote) {
-      if (isRemote) {
-        showRemoteNotice('дистанционно', null);
-        return;
-      }
-
+      if (isRemote) { showRemoteNotice('дистанционно', null); return; }
       const modal = document.getElementById('mapSheetModal');
       const titleEl = document.getElementById('mapSheetTitle');
       const subEl = document.getElementById('mapSheetSubtitle');
@@ -1812,29 +1454,20 @@
       const campusInfo = CAMPUS_DATA[bNum.toLowerCase()] || CAMPUS_DATA[bNum] || null;
 
       titleEl.innerText = `📍 ${roomFormatted || ('Аудитория ' + audName)}`;
-      if (campusInfo) {
-        subEl.innerText = `${campusInfo.address} • ${campusInfo.desc}`;
-      } else {
-        subEl.innerText = `Корпус ${bNum} СКФУ (Ставрополь)`;
-      }
-
+      subEl.innerText = campusInfo ? `${campusInfo.address} • ${campusInfo.desc}` : `Корпус ${bNum} СКФУ (Ставрополь)`;
       b2gis.href = getBuilding2GisUrl(bNum);
       bGoogle.href = getBuildingGoogleUrl(bNum);
       modal.style.display = 'flex';
     }
 
     function closeMapSheet() {
-      const modal = document.getElementById('mapSheetModal');
-      modal.style.display = 'none';
+      document.getElementById('mapSheetModal').style.display = 'none';
     }
 
     function openGroupFromLesson(id, name, event) {
       if (event) event.stopPropagation();
-      if (id) {
-        selectTarget(id, name, 2);
-      } else {
-        executeSearch(name, true);
-      }
+      if (id) selectTarget(id, name, 2);
+      else executeSearch(name, true);
     }
 
     function renderSchedule(days) {
@@ -1857,18 +1490,12 @@
       const dayCardsToRender = [];
 
       days.forEach(day => {
-        let dateStr = '';
-        let localDate = null;
-        let isPastDay = false;
-        let isToday = false;
-
+        let dateStr = '', localDate = null, isPastDay = false, isToday = false;
         if (day.Date) {
-          const datePart = day.Date.split('T')[0];
-          const [y, m, d] = datePart.split('-');
+          const [y, m, d] = day.Date.split('T')[0].split('-');
           localDate = new Date(y, m - 1, d);
           localDate.setHours(0,0,0,0);
           dateStr = localDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-
           if (isViewingCurrentWeek) {
             if (localDate.getTime() < today.getTime()) isPastDay = true;
             else if (localDate.getTime() === today.getTime()) isToday = true;
@@ -1876,7 +1503,6 @@
         }
 
         let lessons = day.Lessons || [];
-
         if (currentTarget.type === 2 && selectedSubgroup !== 'all') {
           lessons = lessons.filter(l => {
             let sg = '';
@@ -1895,14 +1521,10 @@
           activeDaysWithClasses.add(`${localDate.getFullYear()}-${localDate.getMonth()}-${localDate.getDate()}`);
         }
 
-        if (isPastDay && !showPastDaysForCurrentWeek) {
-          hiddenPastDaysCount++;
-          return;
-        }
+        if (isPastDay && !showPastDaysForCurrentWeek) { hiddenPastDaysCount++; return; }
 
         const card = document.createElement('div');
         card.className = `day-card ${isToday ? 'today-card' : ''}`;
-
         card.innerHTML = `
           <div class="day-header">
             <div class="day-title-wrap">
@@ -1917,7 +1539,6 @@
           card.innerHTML += '<div class="empty-day">Пар нет</div>';
         } else {
           lessons.sort((a, b) => (a.PairNumberStart || 0) - (b.PairNumberStart || 0));
-
           let prevEndTimeStr = null;
 
           lessons.forEach((l, index) => {
@@ -1926,10 +1547,7 @@
             const endTimeStr = extractTime(l.TimeEnd, pairNum, true);
 
             if (prevEndTimeStr) {
-              const prevMin = timeToMinutes(prevEndTimeStr);
-              const currMin = timeToMinutes(startTimeStr);
-              const diffMin = currMin - prevMin;
-
+              const diffMin = timeToMinutes(startTimeStr) - timeToMinutes(prevEndTimeStr);
               if (diffMin > 0) {
                 const breakDiv = document.createElement('div');
                 breakDiv.className = 'break-indicator';
@@ -1937,7 +1555,6 @@
                 card.appendChild(breakDiv);
               }
             }
-
             prevEndTimeStr = endTimeStr;
 
             const item = document.createElement('div');
@@ -1945,15 +1562,9 @@
             const typeLower = rawType.toLowerCase();
             const displayType = simplifyLessonType(rawType);
 
-            let typeClass = 'type-other';
-            let badgeClass = 'badge-def';
-            if (typeLower.includes('лекц')) {
-              typeClass = 'type-lecture';
-              badgeClass = 'badge-lec';
-            } else if (typeLower.includes('практ') || typeLower.includes('лаб') || typeLower.includes('семин')) {
-              typeClass = 'type-practice';
-              badgeClass = 'badge-prac';
-            }
+            let typeClass = 'type-other', badgeClass = 'badge-def';
+            if (typeLower.includes('лекц')) { typeClass = 'type-lecture'; badgeClass = 'badge-lec'; }
+            else if (typeLower.includes('практ') || typeLower.includes('лаб') || typeLower.includes('семин')) { typeClass = 'type-practice'; badgeClass = 'badge-prac'; }
 
             item.className = `lesson-item ${typeClass}`;
 
@@ -1970,17 +1581,9 @@
 
             let roomBadgeHtml = '';
             if (audName) {
-              if (isRemote) {
-                roomBadgeHtml = `
-                  <button type="button" class="room-tag room-tag-remote" title="Дистанционное занятие">
-                    💻 ${remoteBadgeLabel} <span class="room-arrow">ℹ️</span>
-                  </button>`;
-              } else {
-                roomBadgeHtml = `
-                  <button type="button" class="room-tag" title="Открыть расписание этой аудитории">
-                    📍 ${roomFormatted} <span class="room-arrow">↗</span>
-                  </button>`;
-              }
+              roomBadgeHtml = isRemote
+                ? `<button type="button" class="room-tag room-tag-remote" title="Дистанционное занятие">💻 ${remoteBadgeLabel} <span class="room-arrow">ℹ️</span></button>`
+                : `<button type="button" class="room-tag" title="Открыть расписание этой аудитории">📍 ${roomFormatted} <span class="room-arrow">↗</span></button>`;
             }
 
             let subgroup = '';
@@ -1996,7 +1599,7 @@
                 const gId = g.Id || null;
                 const sgText = g.Subgroup ? ` (${g.Subgroup} п/г)` : '';
                 const encName = encodeURIComponent(safeName);
-                return `<button type="button" class="group-click-tag" onclick="openGroupFromLesson(${gId || 'null'}, decodeURIComponent('${encName}'), event)" title="Открыть расписание группы ${safeName}">👥 ${safeName}${sgText}</button>`;
+                return `<button type="button" class="group-click-tag" onclick="openGroupFromLesson(${gId || 'null'}, decodeURIComponent('${encName}'), event)">👥 ${safeName}${sgText}</button>`;
               }).filter(Boolean).join(' ');
             }
 
@@ -2020,21 +1623,16 @@
               <button class="lesson-dots-btn" title="Показать корпус на карте (2ГИС / Google)">⋮</button>
             `;
 
-            // Клик по аудитории
             const roomBtn = item.querySelector('.room-tag');
             if (roomBtn) {
               roomBtn.onclick = (e) => {
                 e.stopPropagation();
-                if (isRemote) {
-                  showRemoteNotice(remoteBadgeLabel, e);
-                } else {
-                  if (audId) selectTarget(audId, audName, 3);
-                  else executeSearch(audName, true);
-                }
+                if (isRemote) showRemoteNotice(remoteBadgeLabel, e);
+                else if (audId) selectTarget(audId, audName, 3);
+                else executeSearch(audName, true);
               };
             }
 
-            // Клик по преподавателю
             const teacherEl = item.querySelector('.teacher-block');
             if (teacherEl && teacherName) {
               teacherEl.onclick = (e) => {
@@ -2044,19 +1642,14 @@
               };
             }
 
-            // Клик по трем точкам (карты)
             const dotsBtn = item.querySelector('.lesson-dots-btn');
             if (dotsBtn) {
-              dotsBtn.onclick = (e) => {
-                e.stopPropagation();
-                openMapSheet(audName, roomFormatted, isRemote);
-              };
+              dotsBtn.onclick = (e) => { e.stopPropagation(); openMapSheet(audName, roomFormatted, isRemote); };
             }
 
             card.appendChild(item);
           });
         }
-
         dayCardsToRender.push(card);
       });
 
@@ -2096,9 +1689,8 @@
     const calendarGrid = document.getElementById('calendarGrid');
 
     function toggleCalendar() {
-      if (calendarPopup.style.display === 'block') {
-        calendarPopup.style.display = 'none';
-      } else {
+      if (calendarPopup.style.display === 'block') calendarPopup.style.display = 'none';
+      else {
         calendarMonthDate = new Date(currentMonday);
         renderCalendarGrid();
         calendarPopup.style.display = 'block';
@@ -2111,22 +1703,19 @@
     }
 
     function renderCalendarGrid() {
-      const year = calendarMonthDate.getFullYear();
-      const month = calendarMonthDate.getMonth();
+      const year = calendarMonthDate.getFullYear(), month = calendarMonthDate.getMonth();
       const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
       document.getElementById('calMonthTitle').innerText = `${monthNames[month]} ${year}`;
 
       calendarGrid.innerHTML = '';
-      const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-      weekdays.forEach(w => {
+      ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].forEach(w => {
         const el = document.createElement('div');
         el.className = 'cal-weekday';
         el.textContent = w;
         calendarGrid.appendChild(el);
       });
 
-      const firstDayOfMonth = new Date(year, month, 1);
-      let startDay = firstDayOfMonth.getDay();
+      let startDay = new Date(year, month, 1).getDay();
       startDay = startDay === 0 ? 6 : startDay - 1;
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -2136,14 +1725,11 @@
         calendarGrid.appendChild(emptyCell);
       }
 
-      const monTime = currentMonday.getTime();
-      const sunTime = monTime + 6 * 86400000;
-
+      const monTime = currentMonday.getTime(), sunTime = monTime + 6 * 86400000;
       for (let day = 1; day <= daysInMonth; day++) {
         const cell = document.createElement('div');
         cell.className = 'cal-day-cell';
         cell.textContent = day;
-
         const cellDate = new Date(year, month, day);
         cellDate.setHours(0,0,0,0);
         const cellTime = cellDate.getTime();
@@ -2152,9 +1738,7 @@
           cell.classList.add('in-week');
           if (cellTime === monTime) cell.classList.add('selected');
         }
-
-        const dateKey = `${year}-${month}-${day}`;
-        if (activeDaysWithClasses.has(dateKey)) cell.classList.add('has-classes');
+        if (activeDaysWithClasses.has(`${year}-${month}-${day}`)) cell.classList.add('has-classes');
 
         cell.onclick = () => {
           currentMonday = getMonday(cellDate);
@@ -2162,13 +1746,11 @@
           calendarPopup.style.display = 'none';
           loadSchedule();
         };
-
         calendarGrid.appendChild(cell);
       }
     }
 
-    let searchTimeout = null;
-    let currentSearchController = null;
+    let searchTimeout = null, currentSearchController = null;
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
 
@@ -2183,81 +1765,44 @@
         try {
           const modelData = JSON.parse(modelMatch[1]);
           if (modelData.Id && modelData.Name) {
-            let typeName = 'Группа';
-            let targetType = modelData.Type || 2;
+            let typeName = 'Группа', targetType = modelData.Type || 2;
             if (targetType === 1) typeName = 'Преподаватель';
-            else if (targetType === 2) typeName = 'Группа';
             else if (targetType === 3) typeName = 'Аудитория';
-
-            items.push({
-              id: modelData.Id,
-              name: modelData.Name.trim(),
-              targetType: targetType,
-              typeName: typeName
-            });
+            items.push({ id: modelData.Id, name: modelData.Name.trim(), targetType, typeName });
           }
         } catch (e) {}
       }
 
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, 'text/html');
-      const links = doc.querySelectorAll('a[href*="/schedule/"]');
-      
-      links.forEach(a => {
+      const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+      doc.querySelectorAll('a[href*="/schedule/"]').forEach(a => {
         const href = a.getAttribute('href') || '';
         const name = a.textContent.replace(/\s+/g, ' ').trim();
         if (!name || name === 'Расписание' || name.toLowerCase().includes('войти') || name.includes('<-') || name.includes('->')) return;
-
-        const cleanHref = href.split('?')[0];
-        const parts = cleanHref.split('/').filter(Boolean);
+        const parts = href.split('?')[0].split('/').filter(Boolean);
         const typeIndex = parts.indexOf('schedule');
         if (typeIndex === -1 || typeIndex + 2 >= parts.length) return;
-
         const typeStr = parts[typeIndex + 1].toLowerCase();
         const id = parseInt(parts[typeIndex + 2], 10);
         if (!id) return;
 
-        let targetType = 2;
-        let typeName = 'Группа';
-        if (typeStr.includes('person') || typeStr.includes('teacher')) {
-          targetType = 1;
-          typeName = 'Преподаватель';
-        } else if (typeStr.includes('aud') || typeStr.includes('room')) {
-          targetType = 3;
-          typeName = 'Аудитория';
-        } else if (typeStr.includes('group')) {
-          targetType = 2;
-          typeName = 'Группа';
-        }
-
-        if (!items.some(it => it.id === id && it.targetType === targetType)) {
-          items.push({ id, name, targetType, typeName });
-        }
+        let targetType = 2, typeName = 'Группа';
+        if (typeStr.includes('person') || typeStr.includes('teacher')) { targetType = 1; typeName = 'Преподаватель'; }
+        else if (typeStr.includes('aud') || typeStr.includes('room')) { targetType = 3; typeName = 'Аудитория'; }
+        if (!items.some(it => it.id === id && it.targetType === targetType)) items.push({ id, name, targetType, typeName });
       });
-
       return items;
     }
 
     async function executeSearch(queryText, isEnter = false) {
-      if (!queryText || queryText.length < 2) {
-        autoList.style.display = 'none';
-        return;
-      }
-
+      if (!queryText || queryText.length < 2) { autoList.style.display = 'none'; return; }
       if (currentSearchController) currentSearchController.abort();
       currentSearchController = new AbortController();
 
       try {
         const normalized = normalizeGroupQuery(queryText);
         let items = await queryServerSearch(normalized, currentSearchController.signal);
-
-        if (!items.length && normalized !== queryText) {
-          items = await queryServerSearch(queryText, currentSearchController.signal);
-        }
-
-        if (items.length > 0) {
-          setCache('search_' + queryText.toLowerCase(), items);
-        }
+        if (!items.length && normalized !== queryText) items = await queryServerSearch(queryText, currentSearchController.signal);
+        if (items.length > 0) setCache('search_' + queryText.toLowerCase(), items);
 
         if (isEnter && items.length === 1) {
           selectTarget(items[0].id, items[0].name, items[0].targetType);
@@ -2265,7 +1810,6 @@
           searchInput.value = '';
           return;
         }
-
         renderAutocomplete(items);
       } catch (err) {
         if (err.name !== 'AbortError') console.error('Ошибка поиска:', err);
@@ -2275,50 +1819,24 @@
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
       const query = e.target.value.trim();
-      
-      if (query.length < 2) {
-        autoList.style.display = 'none';
-        if (currentSearchController) currentSearchController.abort();
-        return;
-      }
-
+      if (query.length < 2) { autoList.style.display = 'none'; if (currentSearchController) currentSearchController.abort(); return; }
       const cached = getCache('search_' + query.toLowerCase(), true);
-      if (cached && cached.length > 0) {
-        renderAutocomplete(cached);
-        return;
-      }
-
-      searchTimeout = setTimeout(() => {
-        executeSearch(query, false);
-      }, 250);
+      if (cached && cached.length > 0) { renderAutocomplete(cached); return; }
+      searchTimeout = setTimeout(() => executeSearch(query, false), 250);
     });
 
     searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        clearTimeout(searchTimeout);
-        executeSearch(searchInput.value.trim(), true);
-      }
+      if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimeout); executeSearch(searchInput.value.trim(), true); }
     });
 
     function renderAutocomplete(items) {
-      if (!items || !items.length) {
-        autoList.style.display = 'none';
-        return;
-      }
+      if (!items || !items.length) { autoList.style.display = 'none'; return; }
       autoList.innerHTML = '';
       items.forEach(item => {
         const div = document.createElement('div');
         div.className = 'autocomplete-item';
-        div.innerHTML = `
-          <span>${item.name}</span>
-          <span class="autocomplete-type">${item.typeName}</span>
-        `;
-        div.onclick = () => {
-          selectTarget(item.id, item.name, item.targetType);
-          autoList.style.display = 'none';
-          searchInput.value = '';
-        };
+        div.innerHTML = `<span>${item.name}</span><span class="autocomplete-type">${item.typeName}</span>`;
+        div.onclick = () => { selectTarget(item.id, item.name, item.targetType); autoList.style.display = 'none'; searchInput.value = ''; };
         autoList.appendChild(div);
       });
       autoList.style.display = 'block';
@@ -2332,17 +1850,9 @@
       showScheduleView(true);
     }
 
-    let catalogStep = 1;
-    let selectedInstitute = null;
-
-    function openCatalog() {
-      document.getElementById('catalogModal').style.display = 'flex';
-      renderInstitutesList();
-    }
-
-    function closeCatalog() {
-      document.getElementById('catalogModal').style.display = 'none';
-    }
+    let catalogStep = 1, selectedInstitute = null;
+    function openCatalog() { document.getElementById('catalogModal').style.display = 'flex'; renderInstitutesList(); }
+    function closeCatalog() { document.getElementById('catalogModal').style.display = 'none'; }
 
     function renderInstitutesList() {
       catalogStep = 1;
@@ -2350,7 +1860,6 @@
       document.getElementById('breadcrumbs').style.display = 'none';
       const container = document.getElementById('catalogContainer');
       container.innerHTML = '';
-
       INSTITUTES.forEach(inst => {
         const div = document.createElement('div');
         div.className = 'catalog-item full-width';
@@ -2361,21 +1870,15 @@
     }
 
     async function loadSpecialities(inst) {
-      catalogStep = 2;
-      selectedInstitute = inst;
+      catalogStep = 2; selectedInstitute = inst;
       document.getElementById('modalTitle').innerText = inst.Name;
       document.getElementById('breadcrumbs').style.display = 'inline-block';
       const container = document.getElementById('catalogContainer');
-
       const cacheKey = `specs_${inst.Id}_${inst.BranchId}`;
       const cached = getCache(cacheKey, true);
-      if (cached) {
-        renderSpecsList(inst, cached);
-        return;
-      }
+      if (cached) { renderSpecsList(inst, cached); return; }
 
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка специальностей...</div>';
-
       try {
         const res = await fetchWithProxy(`${API_BASE}/GetSpecialities`, {
           method: 'POST',
@@ -2393,10 +1896,7 @@
     function renderSpecsList(inst, specs) {
       const container = document.getElementById('catalogContainer');
       container.innerHTML = '';
-      if (!specs || !specs.length) {
-        container.innerHTML = '<div class="empty-day">Направления не найдены</div>';
-        return;
-      }
+      if (!specs || !specs.length) { container.innerHTML = '<div class="empty-day">Направления не найдены</div>'; return; }
       specs.forEach(spec => {
         const div = document.createElement('div');
         div.className = 'catalog-item full-width';
@@ -2410,16 +1910,11 @@
       catalogStep = 3;
       document.getElementById('modalTitle').innerText = specName;
       const container = document.getElementById('catalogContainer');
-
       const cacheKey = `groups_${instId}_${branchId}_${specName}`;
       const cached = getCache(cacheKey, true);
-      if (cached) {
-        renderGroupsList(cached);
-        return;
-      }
+      if (cached) { renderGroupsList(cached); return; }
 
       container.innerHTML = '<div class="empty-day" style="text-align:center; padding: 20px;">Загрузка групп...</div>';
-
       try {
         const res = await fetchWithProxy(`${API_BASE}/GetAcademicGroups`, {
           method: 'POST',
@@ -2437,11 +1932,7 @@
     function renderGroupsList(groupsData) {
       const container = document.getElementById('catalogContainer');
       container.innerHTML = '';
-      if (!groupsData || !groupsData.length) {
-        container.innerHTML = '<div class="empty-day">Группы не найдены</div>';
-        return;
-      }
-
+      if (!groupsData || !groupsData.length) { container.innerHTML = '<div class="empty-day">Группы не найдены</div>'; return; }
       groupsData.forEach(block => {
         const title = document.createElement('div');
         title.style.cssText = 'font-weight: 700; color: var(--accent); margin: 12px 0 6px 0; font-size: 0.9rem; text-align: left;';
@@ -2450,7 +1941,6 @@
 
         const grid = document.createElement('div');
         grid.className = 'groups-grid';
-
         (block.Value || []).forEach(grp => {
           const div = document.createElement('div');
           div.className = 'catalog-item';
@@ -2458,7 +1948,6 @@
           div.onclick = () => selectTarget(grp.Id, grp.Name, 2);
           grid.appendChild(div);
         });
-
         container.appendChild(grid);
       });
     }
@@ -2468,143 +1957,20 @@
       else if (catalogStep === 2) renderInstitutesList();
     }
 
-    const THEME_PRESETS = {
-      dark: {
-        '--bg': '#0b0f19',
-        '--card-bg': '#151d30',
-        '--text': '#f1f5f9',
-        '--text-muted': '#94a3b8',
-        '--border': 'rgba(255, 255, 255, 0.08)',
-        '--accent': '#38bdf8',
-        '--lecture-bg': 'rgba(16, 185, 129, 0.15)',
-        '--lecture-border': 'rgba(16, 185, 129, 0.45)',
-        '--lecture-badge': '#10b981',
-        '--practice-bg': 'rgba(245, 158, 11, 0.15)',
-        '--practice-border': 'rgba(245, 158, 11, 0.45)',
-        '--practice-badge': '#f59e0b'
-      },
-      light: {
-        '--bg': '#f8fafc',
-        '--card-bg': '#ffffff',
-        '--text': '#0f172a',
-        '--text-muted': '#64748b',
-        '--border': 'rgba(0, 0, 0, 0.08)',
-        '--accent': '#0284c7',
-        '--lecture-bg': 'rgba(16, 185, 129, 0.12)',
-        '--lecture-border': 'rgba(16, 185, 129, 0.4)',
-        '--lecture-badge': '#10b981',
-        '--practice-bg': 'rgba(245, 158, 11, 0.12)',
-        '--practice-border': 'rgba(245, 158, 11, 0.4)',
-        '--practice-badge': '#f59e0b'
-      },
-      oled: {
-        '--bg': '#000000',
-        '--card-bg': '#0f0f11',
-        '--text': '#ffffff',
-        '--text-muted': '#a1a1aa',
-        '--border': 'rgba(255, 255, 255, 0.12)',
-        '--accent': '#38bdf8',
-        '--lecture-bg': 'rgba(16, 185, 129, 0.15)',
-        '--lecture-border': 'rgba(16, 185, 129, 0.5)',
-        '--lecture-badge': '#10b981',
-        '--practice-bg': 'rgba(245, 158, 11, 0.15)',
-        '--practice-border': 'rgba(245, 158, 11, 0.5)',
-        '--practice-badge': '#f59e0b'
-      }
-    };
-
-    let userTheme = JSON.parse(localStorage.getItem('customUserTheme')) || THEME_PRESETS.dark;
-
-    function applyCurrentTheme() {
-      Object.keys(userTheme).forEach(prop => {
-        document.documentElement.style.setProperty(prop, userTheme[prop]);
-      });
-      syncThemePickers();
-    }
-
-    function syncThemePickers() {
-      const getHex = (v) => v && v.startsWith('#') ? v : '#38bdf8';
-      if (document.getElementById('picker-bg')) {
-        document.getElementById('picker-bg').value = getHex(userTheme['--bg'] || '#0b0f19');
-        document.getElementById('picker-card').value = getHex(userTheme['--card-bg'] || '#151d30');
-        document.getElementById('picker-accent').value = getHex(userTheme['--accent'] || '#38bdf8');
-        document.getElementById('picker-lecture').value = getHex(userTheme['--lecture-badge'] || '#10b981');
-        document.getElementById('picker-practice').value = getHex(userTheme['--practice-badge'] || '#f59e0b');
-        document.getElementById('picker-text').value = getHex(userTheme['--text'] || '#f1f5f9');
-      }
-    }
-
-    function applyPreset(name) {
-      userTheme = { ...THEME_PRESETS[name] };
-      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
-      applyCurrentTheme();
-    }
-
-    function onCustomColorChange(variableName, hexValue) {
-      userTheme[variableName] = hexValue;
-      document.documentElement.style.setProperty(variableName, hexValue);
-      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
-    }
-
-    function onCustomLectureChange(hexValue) {
-      userTheme['--lecture-badge'] = hexValue;
-      userTheme['--lecture-bg'] = hexValue + '22';
-      userTheme['--lecture-border'] = hexValue + '77';
-      document.documentElement.style.setProperty('--lecture-badge', hexValue);
-      document.documentElement.style.setProperty('--lecture-bg', hexValue + '22');
-      document.documentElement.style.setProperty('--lecture-border', hexValue + '77');
-      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
-    }
-
-    function onCustomPracticeChange(hexValue) {
-      userTheme['--practice-badge'] = hexValue;
-      userTheme['--practice-bg'] = hexValue + '22';
-      userTheme['--practice-border'] = hexValue + '77';
-      document.documentElement.style.setProperty('--practice-badge', hexValue);
-      document.documentElement.style.setProperty('--practice-bg', hexValue + '22');
-      document.documentElement.style.setProperty('--practice-border', hexValue + '77');
-      localStorage.setItem('customUserTheme', JSON.stringify(userTheme));
-    }
-
-    function openThemeModal() {
-      document.getElementById('themeModal').style.display = 'flex';
-      syncThemePickers();
-    }
-
-    function closeThemeModal() {
-      document.getElementById('themeModal').style.display = 'none';
-    }
-
     document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !autoList.contains(e.target)) {
-        autoList.style.display = 'none';
-      }
-      if (!calendarPopup.contains(e.target) && !document.getElementById('calendarToggleBtn').contains(e.target)) {
-        calendarPopup.style.display = 'none';
-      }
-    });
-
-    window.addEventListener('online', () => {
-      document.getElementById('statusText').innerText = 'В сети';
-    });
-    window.addEventListener('offline', () => {
-      document.getElementById('statusText').innerText = 'Офлайн (сохранено)';
+      if (!searchInput.contains(e.target) && !autoList.contains(e.target)) autoList.style.display = 'none';
+      if (!calendarPopup.contains(e.target) && !document.getElementById('calendarToggleBtn').contains(e.target)) calendarPopup.style.display = 'none';
     });
 
     // Инициализация
-    applyCurrentTheme();
-    showHomeView(false);
-    history.replaceState({ view: 'home' }, '', window.location.pathname);
-    setInterval(updateLiveStatus, 1000);
-
-    // Регистрация Service Worker для PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((err) => {
-          console.error('Ошибка регистрации Service Worker:', err);
-        });
-      });
+    updateCabinetButton();
+    if (window.location.hash === '#schedule' && currentTarget) {
+      showScheduleView(false);
+    } else {
+      showHomeView(false);
+      history.replaceState({ view: 'home' }, '', window.location.pathname);
     }
+    setInterval(updateLiveStatus, 1000);
   </script>
 </body>
 </html>
