@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skfu-schedule-v18';
+const CACHE_NAME = 'skfu-schedule-v19';
 
 const STATIC_ASSETS = [
   './',
