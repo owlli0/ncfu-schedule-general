@@ -1,8 +1,11 @@
-const CACHE_NAME = 'skfu-schedule-v16.2';
+const CACHE_NAME = 'skfu-schedule-v18';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
+  './stats.html',
+  './common.css',
+  './common.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -42,7 +45,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
-  // 1. Пропускаем запросы расписания СКФУ и прокси (они кэшируются в localStorage)
+  // 1. Запросы к API вуза и прокси не кэшируем в SW
   if (
     event.request.method !== 'GET' ||
     url.includes('ecampus') ||
@@ -53,33 +56,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Для перехода по страницам (HTML): Network-First
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-          return networkResponse;
-        })
-        .catch(() => caches.match('./index.html') || caches.match('./'))
-    );
-    return;
-  }
-
-  // 3. Для всех остальных ресурсов (иконки, манифест, Google Fonts и gstatic): Cache-First
+  // 2. Мгновенная отдача страниц и статики (Stale-While-Revalidate)
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return (
-        cachedResponse ||
-        fetch(event.request).then((networkResponse) => {
+    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           }
           return networkResponse;
         })
-      );
+        .catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
